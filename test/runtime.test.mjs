@@ -40,6 +40,59 @@ function buildAnswersForPattern(runtime, pattern, drinkAnswers = { drink_gate_q1
   return answers;
 }
 
+function toPlainValue(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function numberToPattern(number, length = 15) {
+  const digits = new Array(length).fill('L');
+  const levels = ['L', 'M', 'H'];
+  let remaining = number;
+
+  for (let index = length - 1; index >= 0; index -= 1) {
+    digits[index] = levels[remaining % 3];
+    remaining = Math.floor(remaining / 3);
+  }
+
+  return digits.join('');
+}
+
+function buildExpectedOutcome(runtime, answers, bestNormal) {
+  const drinkTriggered =
+    Number(answers[runtime.exports.DRUNK_TRIGGER_QUESTION_ID] || 0) === 2;
+
+  if (drinkTriggered) {
+    return {
+      finalTypeCode: 'DRUNK',
+      modeKicker: '隐藏人格已激活',
+      badge: '匹配度 100% · 酒精异常因子已接管',
+      sub: '乙醇亲和性过强，系统已直接跳过常规人格审判。',
+      special: true,
+      secondaryTypeCode: bestNormal.code
+    };
+  }
+
+  if (bestNormal.similarity < 60) {
+    return {
+      finalTypeCode: 'HHHH',
+      modeKicker: '系统强制兜底',
+      badge: `标准人格库最高匹配仅 ${bestNormal.similarity}%`,
+      sub: '标准人格库对你的脑回路集体罢工了，于是系统把你强制分配给了 HHHH。',
+      special: true,
+      secondaryTypeCode: null
+    };
+  }
+
+  return {
+    finalTypeCode: bestNormal.code,
+    modeKicker: '你的主类型',
+    badge: `匹配度 ${bestNormal.similarity}% · 精准命中 ${bestNormal.exact}/15 维`,
+    sub: '维度命中度较高，当前结果可视为你的第一人格画像。',
+    special: false,
+    secondaryTypeCode: null
+  };
+}
+
 async function loadLiveRuntime(t, seed = 42) {
   try {
     return await loadSbtiRuntime({
@@ -167,4 +220,150 @@ test('live runtime falls back to HHHH when the best normal match stays below 60%
   assert.match(result.badge, /最高匹配仅/);
   assert.equal(result.flags.drinkTriggered, false);
   assert.equal(result.flags.fallbackTriggered, true);
+});
+
+test('50 deterministic cases keep the local scoring model aligned with the live website runtime', async (t) => {
+  const runtime = await loadLiveRuntime(t, 20260409);
+  if (!runtime) {
+    return;
+  }
+
+  const maxPatternSpace = 3 ** runtime.exports.dimensionOrder.length;
+  const step = Math.floor(maxPatternSpace / 45);
+  const cases = [];
+
+  for (let index = 0; index < 45; index += 1) {
+    cases.push({
+      label: `generated-${index + 1}`,
+      answers: buildAnswersForPattern(runtime, numberToPattern(index * step), {
+        drink_gate_q1: 1
+      })
+    });
+  }
+
+  cases.push({
+    label: 'all-high-normal',
+    answers: buildAnswersForPattern(runtime, 'H'.repeat(runtime.exports.dimensionOrder.length), {
+      drink_gate_q1: 1
+    })
+  });
+  cases.push({
+    label: 'known-fallback',
+    answers: buildAnswersForPattern(runtime, 'LLLLLLMLLHHHHML', {
+      drink_gate_q1: 1
+    })
+  });
+  cases.push({
+    label: 'gate-open-without-drunk-trigger',
+    answers: buildAnswersForPattern(runtime, 'HMHHLLLMLHMLLLL', {
+      drink_gate_q1: 3,
+      drink_gate_q2: 1
+    })
+  });
+  cases.push({
+    label: 'drunk-override-all-high',
+    answers: buildAnswersForPattern(runtime, 'H'.repeat(runtime.exports.dimensionOrder.length), {
+      drink_gate_q1: 3,
+      drink_gate_q2: 2
+    })
+  });
+  cases.push({
+    label: 'drunk-override-mixed',
+    answers: buildAnswersForPattern(runtime, 'MLHMMHLHLHMLMHL', {
+      drink_gate_q1: 3,
+      drink_gate_q2: 2
+    })
+  });
+
+  assert.equal(cases.length, 50);
+
+  cases.forEach(({ label, answers }) => {
+    const stats = computeDimensionStats(runtime, answers);
+    const ranked = rankNormalTypes(runtime, stats.resultVector);
+    const bestNormal = ranked[0];
+    const expectedOutcome = buildExpectedOutcome(runtime, answers, bestNormal);
+
+    runtime.exports.app.answers = { ...answers };
+    const websiteResult = toPlainValue(runtime.exports.computeResult());
+
+    assert.deepEqual(
+      websiteResult.rawScores,
+      stats.rawScores,
+      `${label}: raw dimension scores diverged`
+    );
+    assert.deepEqual(
+      websiteResult.levels,
+      stats.levels,
+      `${label}: level bucketing diverged`
+    );
+    assert.deepEqual(
+      JSON.stringify(
+        websiteResult.ranked.map(({ code, distance, exact, similarity }) => ({
+          code,
+          distance,
+          exact,
+          similarity
+        }))
+      ),
+      JSON.stringify(
+        ranked.map(({ code, distance, exact, similarity }) => ({
+          code,
+          distance,
+          exact,
+          similarity
+        }))
+      ),
+      `${label}: ranked normal personalities diverged`
+    );
+    assert.equal(
+      websiteResult.bestNormal.code,
+      bestNormal.code,
+      `${label}: best normal type diverged`
+    );
+    assert.equal(
+      websiteResult.bestNormal.distance,
+      bestNormal.distance,
+      `${label}: best normal distance diverged`
+    );
+    assert.equal(
+      websiteResult.bestNormal.exact,
+      bestNormal.exact,
+      `${label}: best normal exact-hit count diverged`
+    );
+    assert.equal(
+      websiteResult.bestNormal.similarity,
+      bestNormal.similarity,
+      `${label}: best normal similarity diverged`
+    );
+    assert.equal(
+      websiteResult.finalType.code,
+      expectedOutcome.finalTypeCode,
+      `${label}: final type branch diverged`
+    );
+    assert.equal(
+      websiteResult.modeKicker,
+      expectedOutcome.modeKicker,
+      `${label}: result header diverged`
+    );
+    assert.equal(
+      websiteResult.badge,
+      expectedOutcome.badge,
+      `${label}: result badge diverged`
+    );
+    assert.equal(
+      websiteResult.sub,
+      expectedOutcome.sub,
+      `${label}: result subtext diverged`
+    );
+    assert.equal(
+      websiteResult.special,
+      expectedOutcome.special,
+      `${label}: special-result flag diverged`
+    );
+    assert.equal(
+      websiteResult.secondaryType?.code ?? null,
+      expectedOutcome.secondaryTypeCode,
+      `${label}: secondary type diverged`
+    );
+  });
 });
