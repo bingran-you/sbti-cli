@@ -1,0 +1,13 @@
+This repository includes original code and documentation authored for `sbti-cli`,
+which are released under the MIT License in `LICENSE`.
+
+This repository may also contain third-party content derived from the upstream
+SBTI website at https://sbti.fancc.de5.net/, including but not limited to:
+
+- survey prompts
+- result descriptions
+- extracted character artwork / poster images
+
+Those upstream materials remain subject to their original ownership and are not
+relicensed by this repository unless the original rights holder states
+otherwise.

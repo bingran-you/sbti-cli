@@ -1,31 +1,341 @@
-<h1 align="center">SBTI CLI · 官网逻辑等效的命令行版</h1>
+<h1 align="center">SBTI CLI · Website-Equivalent Command-Line Runner</h1>
 
 <p align="center">
-  <em>把 SBTI 人格测试搬进终端，同时尽量保留官网同一套运行时与结果资源。</em><br>
-  一个支持 <strong>在线同步</strong>、<strong>离线回退</strong>、<strong>结果图导出</strong> 的 Node.js CLI。
+  <em>Run the SBTI survey in your terminal while staying as close as possible to the website's own runtime and result assets.</em><br>
+  A Node.js CLI with <strong>live sync</strong>, <strong>offline fallback</strong>, and <strong>result-image export</strong>.
 </p>
 
 <p align="center">
-  <a href="https://sbti.fancc.de5.net"><img alt="原测试" src="https://img.shields.io/badge/原测试-sbti.fancc.de5.net-4CAF50?style=flat-square"></a>
+  <a href="https://sbti.fancc.de5.net"><img alt="Original test" src="https://img.shields.io/badge/original-sbti.fancc.de5.net-4CAF50?style=flat-square"></a>
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-18%2B-339933?style=flat-square">
-  <img alt="运行模式" src="https://img.shields.io/badge/运行模式-在线%20%2B%20离线-blue?style=flat-square">
-  <img alt="结果图" src="https://img.shields.io/badge/结果图-27%20张-orange?style=flat-square">
-  <img alt="题目" src="https://img.shields.io/badge/题目-30%20%2B%201%20隐藏-purple?style=flat-square">
-  <img alt="语言" src="https://img.shields.io/badge/语言-简体中文-red?style=flat-square">
+  <img alt="Runtime mode" src="https://img.shields.io/badge/runtime-live%20%2B%20offline-blue?style=flat-square">
+  <img alt="Result images" src="https://img.shields.io/badge/result%20images-27-orange?style=flat-square">
+  <img alt="Questions" src="https://img.shields.io/badge/questions-30%20%2B%201%20hidden-purple?style=flat-square">
+  <img alt="Language" src="https://img.shields.io/badge/language-English%20%2F%20简体中文-red?style=flat-square">
 </p>
 
 <p align="center">
-  <img src="assets/type-images/CTRL.png"  width="130" alt="CTRL">
-  <img src="assets/type-images/BOSS.png"  width="130" alt="BOSS">
-  <img src="assets/type-images/SEXY.png"  width="130" alt="SEXY">
-  <img src="assets/type-images/MALO.png"  width="130" alt="MALO">
+  <img src="assets/type-images/CTRL.png" width="130" alt="CTRL">
+  <img src="assets/type-images/BOSS.png" width="130" alt="BOSS">
+  <img src="assets/type-images/SEXY.png" width="130" alt="SEXY">
+  <img src="assets/type-images/MALO.png" width="130" alt="MALO">
   <img src="assets/type-images/DRUNK.png" width="130" alt="DRUNK">
-  <img src="assets/type-images/HHHH.png"  width="130" alt="HHHH">
+  <img src="assets/type-images/HHHH.png" width="130" alt="HHHH">
+</p>
+
+<p align="center">
+  <strong>Language / 语言：</strong>
+  <a href="#english">English</a>
+  ·
+  <a href="#简体中文">简体中文</a>
 </p>
 
 ---
 
-## 📖 目录
+<a id="english"></a>
+
+## English
+
+Quick switch: [Jump to 简体中文](#简体中文)
+
+### 📖 Table of Contents
+
+- [What Is This](#-what-is-this)
+- [Installation & Setup](#-installation--setup)
+- [Using the CLI](#-using-the-cli)
+- [Core Capabilities](#-core-capabilities)
+- [Result Images & Offline Resources](#-result-images--offline-resources)
+- [Data Sources & How It Works](#-data-sources--how-it-works)
+- [Acknowledgements](#-acknowledgements)
+- [License](#-license)
+
+---
+
+## 🎯 What Is This
+
+This repository turns [**sbti.fancc.de5.net**](https://sbti.fancc.de5.net) into a local command-line runner. It does not hand-reimplement a “similar” survey; instead, it tries to reuse the website's own `main.js` runtime whenever possible, so the CLI stays aligned with the original behavior.
+
+Key traits:
+
+- 🎲 **Website-equivalent question flow**: shuffled regular questions, drink-gate insertion, and hidden-question reveal follow the same runtime logic
+- 📊 **Website-equivalent scoring**: 15-dimension scoring, H / M / L bucketing, 25 normal-type ranking, `DRUNK` override, and `HHHH` fallback stay aligned with the site
+- 📴 **Offline-safe execution**: the CLI prefers the live website first, then automatically falls back to a bundled local snapshot if the site is unavailable
+- 🖼️ **Exportable result posters**: all 27 website poster images can be decoded from `main.js` into local files
+- ✅ **Regression coverage**: the repo includes live parity tests, offline fallback tests, and a 50-case result regression suite
+
+If you want to:
+
+- take the SBTI test from a terminal
+- inspect how the result logic works
+- keep using it while the website is down
+- export the official result posters locally
+
+this repo is built for exactly that.
+
+---
+
+## 🧭 Installation & Setup
+
+Getting started only takes four steps:
+
+| Step | What to do |
+|---|---|
+| **1️⃣ Install Node.js** | Use **Node.js 18+** so `node` and `npm` are available |
+| **2️⃣ Clone the repo** | Download this repository locally |
+| **3️⃣ Install dependencies** | Run `npm install` |
+| **4️⃣ Verify the setup** | Run `npm test` to confirm the CLI and fallback paths work |
+
+```bash
+git clone https://github.com/bingran-you/sbti-cli.git
+cd sbti-cli
+npm install
+npm test
+```
+
+After setup, start the CLI with:
+
+```bash
+npm run sbti
+```
+
+or:
+
+```bash
+node src/cli.mjs
+```
+
+> 💡 There is no build step, no database, no browser driver, and no `.env` file required. If Node.js is installed, you can run the project.
+
+---
+
+## 🧪 Using the CLI
+
+### Common Commands
+
+| Command | Purpose |
+|---|---|
+| `npm run sbti` | Start a normal interactive run |
+| `npm run sbti -- --seed 42` | Use a deterministic shuffle seed |
+| `npm run sbti -- --json` | Print the final result as JSON |
+| `npm run sbti -- --preview-dimensions` | Show dimension labels while answering |
+| `npm run sbti -- --source-file ./main.js` | Load survey logic from a local `main.js` |
+| `npm run sbti -- --source-url https://.../main.js` | Load survey logic from a custom remote script |
+| `npm run export-images` | Export all 27 result posters and build a local gallery |
+| `npm run refresh-snapshot` | Refresh the bundled offline snapshot from the live site |
+
+### Interactive Controls
+
+Once the CLI starts, you answer one question at a time:
+
+| Input | Action |
+|---|---|
+| `A / B / C / D` | Select the current option |
+| `b` | Go back to the previous question |
+| `Enter` | Keep the current answer and move on |
+| `q` | Quit without submitting |
+| `question number` | After finishing, jump back to a specific question |
+
+### Typical Run
+
+```bash
+npm run sbti
+```
+
+```text
+SBTI CLI
+Question source: https://sbti.fancc.de5.net/main.js
+
+Question 1 / 31 · dimension hidden
+...
+
+Enter A/B/C/D, or b to go back.
+> C
+```
+
+If the live site cannot be loaded, the CLI automatically switches to the bundled offline snapshot and prints a clear notice before the questionnaire starts.
+
+---
+
+## 🧬 Core Capabilities
+
+<table>
+<tr>
+  <th>Area</th>
+  <th>Capability</th>
+  <th>Details</th>
+</tr>
+<tr>
+  <td><strong>🎯 Live website runtime</strong></td>
+  <td>Loads the real <code>main.js</code> first</td>
+  <td>The CLI reuses the website's own flow, scoring, and special branches whenever the live script is available</td>
+</tr>
+<tr>
+  <td><strong>🛟 Offline fallback</strong></td>
+  <td>Bundled snapshot takes over automatically</td>
+  <td>If the website is down, slow, or broken, the CLI still works without manual intervention</td>
+</tr>
+<tr>
+  <td><strong>🖼️ Result-image export</strong></td>
+  <td>27 embedded posters can be extracted</td>
+  <td>The repo can generate local image files, a JSON manifest, and an HTML gallery</td>
+</tr>
+<tr>
+  <td><strong>🧪 Regression tests</strong></td>
+  <td>Live + offline verification</td>
+  <td>Includes runtime parity, 50 deterministic result cases, image extraction checks, and fallback coverage</td>
+</tr>
+<tr>
+  <td><strong>🧰 Scriptable runtime API</strong></td>
+  <td>Importable utilities for tooling</td>
+  <td>You can reuse <code>loadSbtiRuntime()</code>, <code>buildResultSummary()</code>, and image helpers in custom scripts</td>
+</tr>
+</table>
+
+---
+
+## 🎭 Result Images & Offline Resources
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <a href="assets/type-images/index.html"><img src="assets/type-images/CTRL.png" width="180"><br><strong>Local result gallery</strong></a><br>
+      <sub>An HTML gallery generated from the extracted poster files</sub>
+    </td>
+    <td align="center" width="33%">
+      <a href="assets/type-images/manifest.json"><img src="assets/type-images/BOSS.png" width="180"><br><strong>Image manifest</strong></a><br>
+      <sub>File names, MIME types, and sizes for all exported posters</sub>
+    </td>
+    <td align="center" width="33%">
+      <a href="src/bundled-data.mjs"><img src="assets/type-images/SEXY.png" width="180"><br><strong>Offline snapshot</strong></a><br>
+      <sub>The built-in survey data used when the website cannot be reached</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="scripts/export-type-images.mjs"><img src="assets/type-images/MALO.png" width="180"><br><strong>Image export script</strong></a><br>
+      <sub>Decodes <code>TYPE_IMAGES</code> from <code>main.js</code> into local files</sub>
+    </td>
+    <td align="center">
+      <a href="scripts/update-bundled-data.mjs"><img src="assets/type-images/DRUNK.png" width="180"><br><strong>Snapshot refresh script</strong></a><br>
+      <sub>Updates the bundled offline snapshot from the live website</sub>
+    </td>
+    <td align="center">
+      <a href="test/runtime.test.mjs"><img src="assets/type-images/HHHH.png" width="180"><br><strong>Parity tests</strong></a><br>
+      <sub>Checks that CLI results stay aligned with the website logic</sub>
+    </td>
+  </tr>
+</table>
+
+### Export All Result Images
+
+```bash
+npm run export-images
+```
+
+This generates:
+
+- [`assets/type-images/index.html`](assets/type-images/index.html) — local gallery
+- [`assets/type-images/manifest.json`](assets/type-images/manifest.json) — poster manifest
+- [`assets/type-images/`](assets/type-images/) — all decoded `.png` / `.jpg` files
+
+### Refresh the Offline Snapshot
+
+```bash
+npm run refresh-snapshot
+```
+
+That command pulls the latest live `main.js` and rewrites [`src/bundled-data.mjs`](src/bundled-data.mjs) so the offline mode stays as current as possible.
+
+---
+
+## 🔬 Data Sources & How It Works
+
+### Why It Can Match the Website So Closely
+
+The website packs its survey logic into `main.js`. This repository uses [`src/runtime.mjs`](src/runtime.mjs) plus Node.js `vm` sandboxing to evaluate that script in a tiny fake browser environment, then expose the internal constants and result helpers for local use.
+
+The CLI therefore prefers the same runtime objects the site uses:
+
+| Runtime object | Content |
+|---|---|
+| `dimensionMeta` | Chinese labels and model groups for the 15 dimensions |
+| `questions` | The 30 regular questions |
+| `specialQuestions` | The drink-gate question set |
+| `TYPE_LIBRARY` | Codes, names, intros, and full descriptions for all 27 result types |
+| `NORMAL_TYPES` | The 25 normal H / M / L templates |
+| `DIM_EXPLANATIONS` | Dimension explanations for each L / M / H tier |
+| `computeResult()` | The website's own result-selection branch logic |
+
+That is why the CLI can stay aligned with:
+
+- question shuffle
+- drink-gate insertion and hidden question reveal
+- 15-dimension scoring and bucketing
+- normal-type ranking
+- `DRUNK` override
+- `HHHH` low-similarity fallback
+
+### Where the Poster Art Comes From
+
+The website also embeds a `TYPE_IMAGES` object directly inside `main.js`. All 27 posters are stored as `data:image/png;base64,...` or `data:image/jpeg;base64,...`. [`src/type-images.mjs`](src/type-images.mjs) extracts those images, and [`scripts/export-type-images.mjs`](scripts/export-type-images.mjs) writes them out as local files.
+
+### Most Important Files in This Repo
+
+- [`src/cli.mjs`](src/cli.mjs) — CLI entry point and interactive questionnaire flow
+- [`src/runtime.mjs`](src/runtime.mjs) — live runtime loading, sandbox evaluation, offline fallback, and result summarization
+- [`src/bundled-data.mjs`](src/bundled-data.mjs) — bundled offline snapshot
+- [`src/type-images.mjs`](src/type-images.mjs) — `TYPE_IMAGES` parsing and image helpers
+- [`scripts/export-type-images.mjs`](scripts/export-type-images.mjs) — poster export and gallery generation
+- [`scripts/update-bundled-data.mjs`](scripts/update-bundled-data.mjs) — offline snapshot refresh
+- [`test/runtime.test.mjs`](test/runtime.test.mjs) — live parity and offline fallback tests
+- [`test/type-images.test.mjs`](test/type-images.test.mjs) — image extraction coverage
+
+---
+
+## 🙏 Acknowledgements
+
+<table>
+  <tr>
+    <th>Project</th>
+    <th>Author</th>
+    <th>Contribution</th>
+  </tr>
+  <tr>
+    <td><a href="https://sbti.fancc.de5.net"><strong>SBTI Personality Test</strong></a></td>
+    <td>Bilibili <a href="https://space.bilibili.com/417038183">@蛆肉儿串儿</a></td>
+    <td>Original survey author and source of the question text, result copy, and character artwork</td>
+  </tr>
+  <tr>
+    <td><a href="https://github.com/serenakeyitan/sbti-wiki"><strong>sbti-wiki</strong></a></td>
+    <td><a href="https://github.com/serenakeyitan">@serenakeyitan</a></td>
+    <td>The visual README format here was inspired by that project's centered hero, badges, image strip, and information-card layout</td>
+  </tr>
+  <tr>
+    <td><strong>sbti-cli</strong></td>
+    <td><a href="https://github.com/bingran-you">Bingran You (@bingran-you)</a></td>
+    <td>Built the sandboxed runtime loader, offline snapshot, image exporter, and regression test suite for a practical terminal workflow</td>
+  </tr>
+</table>
+
+> ⚠️ **For entertainment only**: the upstream site already warns against treating this as diagnosis, hiring criteria, relationship truth, fortune telling, or any serious judgment. This repo is a tooling and reference project, not a psychological assessment.
+
+---
+
+## 📄 License
+
+The original code and documentation in this repository are released under the [MIT License](LICENSE).
+
+Third-party survey prompts, result text, and extracted character artwork originate from the upstream SBTI website and remain subject to their original ownership. See [NOTICE](NOTICE) for attribution and scope.
+
+---
+
+<a id="简体中文"></a>
+
+## 简体中文
+
+快速切换：[Jump to English](#english)
+
+### 📖 目录
 
 - [这是什么](#-这是什么)
 - [如何安装与设置](#-如何安装与设置)
@@ -34,7 +344,7 @@
 - [结果图与离线资源](#-结果图与离线资源)
 - [数据来源与原理](#-数据来源与原理)
 - [鸣谢](#-鸣谢)
-- [License](#-license)
+- [License](#-license-1)
 
 ---
 
@@ -308,4 +618,6 @@ CLI 不是手写“差不多”的逻辑，而是优先直接跑官网自己的�
 
 ## 📄 License
 
-当前仓库还没有单独附带一个正式的 `LICENSE` 文件；代码与文档请先按学习、研究、娱乐用途理解。与此同时，原测试中的题目文案、结果文案和角色插画仍然归原作者所有，请不要把这些内容拿去做商业用途。
+本仓库中由本项目原创的代码与文档采用 [MIT License](LICENSE) 发布。
+
+与此同时，来自上游 SBTI 网站的题目文案、结果文案以及角色插画仍然归原作者所有，并不因为放进这个仓库就自动转成 MIT。具体归属说明见 [NOTICE](NOTICE)。
