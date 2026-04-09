@@ -2,7 +2,6 @@ import vm from 'node:vm';
 
 import { BUNDLED_SBTI_SNAPSHOT } from './bundled-data.mjs';
 
-export const DEFAULT_SBTI_SOURCE_URL = 'https://sbti.fancc.de5.net/main.js';
 export const BUNDLED_SBTI_SOURCE_URL = 'bundled:sbti-main.js';
 export const NORMAL_TYPE_SIMILARITY_FALLBACK_THRESHOLD = 60;
 export const SIMILARITY_DISTANCE_DENOMINATOR = 30;
@@ -235,15 +234,6 @@ export function createSeededRandom(seed) {
   };
 }
 
-export async function fetchSbtiSource(url = DEFAULT_SBTI_SOURCE_URL) {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch SBTI source from ${url}: ${response.status} ${response.statusText}`);
-  }
-
-  return response.text();
-}
-
 function createRuntimeEvaluationContext(random = Math.random) {
   const { document, elements } = createDocumentStub();
   const math = Object.create(Math);
@@ -309,19 +299,19 @@ globalThis.__sbtiExports = {
   };
 }
 
-function buildBundledRuntimeMetadata(reason = null) {
+function buildBundledRuntimeMetadata() {
   return {
     source: BUNDLED_SBTI_SOURCE_TEXT,
     sourceUrl: BUNDLED_SBTI_SOURCE_URL,
     sourceKind: 'bundled',
     sourceDescription: BUNDLED_SBTI_SOURCE_DESCRIPTION,
-    fallbackReason: reason
+    fallbackReason: null
   };
 }
 
 export async function loadSbtiRuntime({
   sourceText,
-  sourceUrl = DEFAULT_SBTI_SOURCE_URL,
+  sourceUrl = BUNDLED_SBTI_SOURCE_URL,
   random = Math.random
 } = {}) {
   if (sourceText !== null && sourceText !== undefined) {
@@ -336,47 +326,12 @@ export async function loadSbtiRuntime({
     };
   }
 
-  let liveSource;
-  try {
-    liveSource = await fetchSbtiSource(sourceUrl);
-  } catch (error) {
-    const bundled = buildBundledRuntimeMetadata(
-      `无法加载在线题库 ${sourceUrl}，已自动切换到内置离线快照。原始错误: ${error.message}`
-    );
-    const evaluated = evaluateSbtiRuntimeSource(bundled.source, bundled.sourceUrl, random);
-    return {
-      ...bundled,
-      ...evaluated
-    };
-  }
-
-  try {
-    const evaluated = evaluateSbtiRuntimeSource(liveSource, sourceUrl, random);
-    return {
-      source: liveSource,
-      sourceUrl,
-      sourceKind: 'remote',
-      sourceDescription: sourceUrl,
-      fallbackReason: null,
-      ...evaluated
-    };
-  } catch (error) {
-    const bundled = buildBundledRuntimeMetadata(
-      `在线题库 ${sourceUrl} 无法解析，已自动切换到内置离线快照。原始错误: ${error.message}`
-    );
-
-    try {
-      const evaluated = evaluateSbtiRuntimeSource(bundled.source, bundled.sourceUrl, random);
-      return {
-        ...bundled,
-        ...evaluated
-      };
-    } catch (fallbackError) {
-      throw new Error(
-        `Failed to evaluate SBTI runtime from ${sourceUrl}: ${error.message}. Bundled fallback also failed: ${fallbackError.message}`
-      );
-    }
-  }
+  const bundled = buildBundledRuntimeMetadata();
+  const evaluated = evaluateSbtiRuntimeSource(bundled.source, bundled.sourceUrl, random);
+  return {
+    ...bundled,
+    ...evaluated
+  };
 }
 
 export function createSurveySession(runtime, { preview = false } = {}) {

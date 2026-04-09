@@ -7,7 +7,6 @@ import {
   computeDimensionStats,
   createSeededRandom,
   createSurveySession,
-  DEFAULT_SBTI_SOURCE_URL,
   formatOptionCode,
   loadSbtiRuntime,
   patternToVector,
@@ -94,15 +93,10 @@ function buildExpectedOutcome(runtime, answers, bestNormal) {
   };
 }
 
-async function loadLiveRuntime(t, seed = 42) {
-  try {
-    return await loadSbtiRuntime({
-      random: createSeededRandom(seed)
-    });
-  } catch (error) {
-    t.skip(`Unable to reach ${DEFAULT_SBTI_SOURCE_URL}: ${error.message}`);
-    return null;
-  }
+async function loadBundledRuntime(seed = 42) {
+  return loadSbtiRuntime({
+    random: createSeededRandom(seed)
+  });
 }
 
 test('formatOptionCode follows the website letter labels', () => {
@@ -111,12 +105,8 @@ test('formatOptionCode follows the website letter labels', () => {
   assert.equal(formatOptionCode(27), '28');
 });
 
-test('live runtime only inserts the second drink question after selecting 饮酒', async (t) => {
-  const runtime = await loadLiveRuntime(t, 123);
-  if (!runtime) {
-    return;
-  }
-
+test('bundled runtime only inserts the second drink question after selecting 饮酒', async () => {
+  const runtime = await loadBundledRuntime(123);
   const session = createSurveySession(runtime);
   let visibleQuestions = session.getVisibleQuestions();
 
@@ -134,12 +124,8 @@ test('live runtime only inserts the second drink question after selecting 饮酒
   assert.equal(visibleQuestions[drinkGateIndex + 1].id, 'drink_gate_q2');
 });
 
-test('explicit dimension stats produce the expected result string grouping', async (t) => {
-  const runtime = await loadLiveRuntime(t, 321);
-  if (!runtime) {
-    return;
-  }
-
+test('explicit dimension stats produce the expected result string grouping', async () => {
+  const runtime = await loadBundledRuntime(321);
   const answers = buildAnswersForPattern(runtime, 'HMHHLLLMLHMLLLL', {
     drink_gate_q1: 1
   });
@@ -149,12 +135,8 @@ test('explicit dimension stats produce the expected result string grouping', asy
   assert.deepEqual(stats.resultVector, [3, 2, 3, 3, 1, 1, 1, 2, 1, 3, 2, 1, 1, 1, 1]);
 });
 
-test('explicit normal-type ranking reproduces the website ordering math', async (t) => {
-  const runtime = await loadLiveRuntime(t, 654);
-  if (!runtime) {
-    return;
-  }
-
+test('explicit normal-type ranking reproduces the bundled runtime ordering math', async () => {
+  const runtime = await loadBundledRuntime(654);
   const answers = buildAnswersForPattern(runtime, 'HMHHLLLMLHMLLLL', {
     drink_gate_q1: 1
   });
@@ -174,12 +156,8 @@ test('explicit normal-type ranking reproduces the website ordering math', async 
   );
 });
 
-test('live runtime uses the DRUNK override when the hidden drink trigger is activated', async (t) => {
-  const runtime = await loadLiveRuntime(t, 456);
-  if (!runtime) {
-    return;
-  }
-
+test('bundled runtime uses the DRUNK override when the hidden drink trigger is activated', async () => {
+  const runtime = await loadBundledRuntime(456);
   const session = createSurveySession(runtime);
   const answers = {
     drink_gate_q1: 3,
@@ -201,12 +179,8 @@ test('live runtime uses the DRUNK override when the hidden drink trigger is acti
   assert.equal(result.flags.fallbackTriggered, false);
 });
 
-test('live runtime falls back to HHHH when the best normal match stays below 60%', async (t) => {
-  const runtime = await loadLiveRuntime(t, 789);
-  if (!runtime) {
-    return;
-  }
-
+test('bundled runtime falls back to HHHH when the best normal match stays below 60%', async () => {
+  const runtime = await loadBundledRuntime(789);
   const session = createSurveySession(runtime);
   const answers = buildAnswersForPattern(runtime, 'LLLLLLMLLHHHHML', {
     drink_gate_q1: 1
@@ -223,10 +197,12 @@ test('live runtime falls back to HHHH when the best normal match stays below 60%
   assert.equal(result.flags.fallbackTriggered, true);
 });
 
-test('runtime falls back to the bundled offline snapshot when the website is unavailable', async () => {
+test('runtime loads the bundled offline snapshot without touching fetch', async () => {
   const originalFetch = globalThis.fetch;
+  let fetchCallCount = 0;
   globalThis.fetch = async () => {
-    throw new Error('simulated outage');
+    fetchCallCount += 1;
+    throw new Error('fetch should not be called');
   };
 
   try {
@@ -244,22 +220,19 @@ test('runtime falls back to the bundled offline snapshot when the website is una
     assert.equal(runtime.sourceKind, 'bundled');
     assert.equal(runtime.sourceUrl, BUNDLED_SBTI_SOURCE_URL);
     assert.match(runtime.sourceDescription, /内置离线快照/);
-    assert.match(runtime.fallbackReason, /自动切换到内置离线快照/);
+    assert.equal(runtime.fallbackReason, null);
     assert.equal(runtime.exports.questions.length, 30);
     assert.equal(result.resultPattern, 'HMH-HLL-LML-HML-LLL');
     assert.equal(result.finalType.code, result.bestNormal.code);
     assert.equal(result.flags.drinkTriggered, false);
+    assert.equal(fetchCallCount, 0);
   } finally {
     globalThis.fetch = originalFetch;
   }
 });
 
-test('50 deterministic cases keep the local scoring model aligned with the live website runtime', async (t) => {
-  const runtime = await loadLiveRuntime(t, 20260409);
-  if (!runtime) {
-    return;
-  }
-
+test('50 deterministic cases keep the local scoring model aligned with the bundled runtime', async () => {
+  const runtime = await loadBundledRuntime(20260409);
   const maxPatternSpace = 3 ** runtime.exports.dimensionOrder.length;
   const step = Math.floor(maxPatternSpace / 45);
   const cases = [];

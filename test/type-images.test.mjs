@@ -1,16 +1,19 @@
 import assert from 'node:assert/strict';
+import { readFile, readdir } from 'node:fs/promises';
+import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
+import { loadSbtiRuntime } from '../src/runtime.mjs';
 import {
-  DEFAULT_SBTI_SOURCE_URL,
-  fetchSbtiSource,
-  loadSbtiRuntime
-} from '../src/runtime.mjs';
-import {
-  extractTypeImagesFromSource,
   getImageExtensionForMimeType,
+  getMimeTypeForImageExtension,
   parseTypeImageDataUrl
 } from '../src/type-images.mjs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const typeImagesDir = path.resolve(__dirname, '../assets/type-images');
 
 test('parseTypeImageDataUrl decodes supported image data URLs', () => {
   const parsed = parseTypeImageDataUrl('data:image/png;base64,AA==');
@@ -26,31 +29,36 @@ test('getImageExtensionForMimeType normalizes supported image types', () => {
   assert.equal(getImageExtensionForMimeType('image/jpg'), 'jpg');
 });
 
-test('live survey source exposes one embedded result image per personality type', async (t) => {
-  let sourceText;
+test('getMimeTypeForImageExtension normalizes supported image extensions', () => {
+  assert.equal(getMimeTypeForImageExtension('png'), 'image/png');
+  assert.equal(getMimeTypeForImageExtension('jpg'), 'image/jpeg');
+  assert.equal(getMimeTypeForImageExtension('jpeg'), 'image/jpeg');
+});
 
-  try {
-    sourceText = await fetchSbtiSource(DEFAULT_SBTI_SOURCE_URL);
-  } catch (error) {
-    t.skip(`Unable to reach ${DEFAULT_SBTI_SOURCE_URL}: ${error.message}`);
-    return;
-  }
-
-  const runtime = await loadSbtiRuntime({
-    sourceText,
-    sourceUrl: DEFAULT_SBTI_SOURCE_URL
-  });
-  const typeImages = extractTypeImagesFromSource(sourceText);
+test('bundled offline assets expose one local result image per personality type', async () => {
+  const runtime = await loadSbtiRuntime();
+  const manifest = JSON.parse(
+    await readFile(path.join(typeImagesDir, 'manifest.json'), 'utf8')
+  );
+  const directoryEntries = await readdir(typeImagesDir);
   const typeCodes = Object.keys(runtime.exports.TYPE_LIBRARY);
+  const localAssets = directoryEntries.filter((entry) => {
+    const extension = path.extname(entry).replace(/^\./, '').toLowerCase();
+    return ['png', 'jpg', 'jpeg', 'webp'].includes(extension);
+  });
 
   assert.equal(typeCodes.length, 27);
-  assert.equal(Object.keys(typeImages).length, typeCodes.length);
+  assert.equal(localAssets.length, typeCodes.length);
+  assert.equal(manifest.count, typeCodes.length);
   assert.deepEqual(
-    Object.keys(typeImages).sort(),
+    manifest.entries.map((entry) => entry.code).sort(),
     typeCodes.slice().sort()
   );
 
   for (const code of typeCodes) {
-    assert.match(typeImages[code], /^data:image\/(png|jpeg);base64,/);
+    assert.ok(
+      localAssets.some((entry) => path.parse(entry).name === code),
+      `missing local image for ${code}`
+    );
   }
 });

@@ -1,11 +1,9 @@
 #!/usr/bin/env node
 
-import { readFile } from 'node:fs/promises';
 import { createInterface } from 'node:readline/promises';
 import process from 'node:process';
 
 import {
-  DEFAULT_SBTI_SOURCE_URL,
   createSeededRandom,
   createSurveySession,
   findOptionValue,
@@ -19,9 +17,7 @@ function parseArgs(argv) {
     help: false,
     json: false,
     previewDimensions: false,
-    seed: null,
-    sourceFile: null,
-    sourceUrl: DEFAULT_SBTI_SOURCE_URL
+    seed: null
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -48,18 +44,6 @@ function parseArgs(argv) {
       continue;
     }
 
-    if (arg === '--source-file') {
-      options.sourceFile = argv[index + 1] ?? null;
-      index += 1;
-      continue;
-    }
-
-    if (arg === '--source-url') {
-      options.sourceUrl = argv[index + 1] ?? DEFAULT_SBTI_SOURCE_URL;
-      index += 1;
-      continue;
-    }
-
     throw new Error(`Unknown argument: ${arg}`);
   }
 
@@ -72,12 +56,9 @@ function printHelp() {
 Usage:
   npm run sbti
   npm run sbti -- --seed 42
-  npm run sbti -- --source-file ./main.js
 
 Options:
   --seed <number>              Use deterministic question ordering for testing.
-  --source-url <url>           Fetch survey logic from a custom URL.
-  --source-file <path>         Load survey logic from a local main.js file.
   --preview-dimensions         Show dimension labels while answering.
   --json                       Print the final result as JSON.
   --help, -h                   Show this help message.
@@ -160,14 +141,6 @@ function printResult(result, runtime) {
   });
 }
 
-async function loadSourceText(options) {
-  if (!options.sourceFile) {
-    return null;
-  }
-
-  return readFile(options.sourceFile, 'utf8');
-}
-
 async function run() {
   const options = parseArgs(process.argv.slice(2));
 
@@ -177,11 +150,8 @@ async function run() {
   }
 
   const random = options.seed === null ? Math.random : createSeededRandom(options.seed);
-  const sourceText = await loadSourceText(options);
   const runtime = await loadSbtiRuntime({
-    random,
-    sourceText,
-    sourceUrl: options.sourceFile ?? options.sourceUrl
+    random
   });
   const session = createSurveySession(runtime, {
     preview: options.previewDimensions
@@ -193,9 +163,6 @@ async function run() {
   });
 
   console.log('SBTI 人格测试 CLI');
-  if (runtime.fallbackReason) {
-    console.log(runtime.fallbackReason);
-  }
   console.log(`题库来源: ${runtime.sourceDescription}`);
   if (options.seed !== null) {
     console.log(`随机种子: ${options.seed}`);

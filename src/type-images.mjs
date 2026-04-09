@@ -8,6 +8,12 @@ const MIME_TYPE_TO_EXTENSION = {
   'image/png': 'png',
   'image/webp': 'webp'
 };
+const EXTENSION_TO_MIME_TYPE = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp'
+};
 
 export function extractTypeImagesFromSource(sourceText) {
   const normalizedSource = String(sourceText ?? '');
@@ -27,6 +33,15 @@ export function getImageExtensionForMimeType(mimeType) {
   }
 
   return extension;
+}
+
+export function getMimeTypeForImageExtension(extension) {
+  const mimeType = EXTENSION_TO_MIME_TYPE[String(extension ?? '').toLowerCase()];
+  if (!mimeType) {
+    throw new Error(`Unsupported image extension: ${extension}`);
+  }
+
+  return mimeType;
 }
 
 export function parseTypeImageDataUrl(dataUrl) {
@@ -165,7 +180,7 @@ export function buildTypeImageGalleryHtml(entries, title = 'SBTI Result Images')
 <body>
   <main>
     <h1>${escapeHtml(title)}</h1>
-    <p class="intro">Extracted from the live SBTI survey website. Each card is one result poster asset.</p>
+    <p class="intro">Bundled with the offline SBTI CLI. Each card is one local result poster asset.</p>
     <section class="grid">
 ${cards}
     </section>
