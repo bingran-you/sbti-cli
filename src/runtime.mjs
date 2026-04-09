@@ -87,8 +87,7 @@ const DRUNK_TRIGGER_QUESTION_ID = ${serializeBundledValue(snapshot.DRUNK_TRIGGER
 
 const app = {
   shuffledQuestions: [],
-  answers: {},
-  previewMode: false
+  answers: {}
 };
 
 function shuffle(array) {
@@ -199,8 +198,7 @@ function computeResult() {
   };
 }
 
-function startTest(preview = false) {
-  app.previewMode = preview;
+function startTest() {
   app.answers = {};
   const shuffledRegular = shuffle(questions);
   const insertIndex = Math.floor(Math.random() * shuffledRegular.length) + 1;
@@ -334,32 +332,59 @@ export async function loadSbtiRuntime({
   };
 }
 
-export function createSurveySession(runtime, { preview = false } = {}) {
+export function createSurveySession(runtime) {
   if (!runtime?.exports) {
     throw new Error('A loaded SBTI runtime is required.');
   }
 
-  runtime.exports.startTest(preview);
+  runtime.exports.startTest(false);
+
+  let finalized = false;
+
+  const getSessionState = () => {
+    const visibleQuestions = runtime.exports.getVisibleQuestions();
+    const total = visibleQuestions.length;
+    const done = visibleQuestions.filter((question) => runtime.exports.app.answers[question.id] !== undefined).length;
+    const nextQuestion =
+      visibleQuestions.find((question) => runtime.exports.app.answers[question.id] === undefined) ?? null;
+
+    return {
+      visibleQuestions,
+      total,
+      done,
+      complete: total > 0 && done === total,
+      nextQuestion
+    };
+  };
 
   return {
-    preview,
     getAnswers() {
       return toPlainValue(runtime.exports.app.answers);
     },
+    getCurrentQuestion() {
+      return toPlainValue(getSessionState().nextQuestion);
+    },
     getVisibleQuestions() {
-      return toPlainValue(runtime.exports.getVisibleQuestions());
+      return toPlainValue(getSessionState().visibleQuestions);
     },
     getProgress() {
-      const visibleQuestions = runtime.exports.getVisibleQuestions();
-      const total = visibleQuestions.length;
-      const done = visibleQuestions.filter((question) => runtime.exports.app.answers[question.id] !== undefined).length;
-      return {
-        done,
-        total,
-        complete: total > 0 && done === total
-      };
+      const { done, total, complete } = getSessionState();
+      return { done, total, complete };
     },
     answerQuestion(questionId, value) {
+      if (finalized) {
+        throw new Error('This survey session has already been finalized.');
+      }
+
+      const { nextQuestion, complete } = getSessionState();
+      if (complete || !nextQuestion) {
+        throw new Error('All questions have already been answered.');
+      }
+
+      if (questionId !== nextQuestion.id) {
+        throw new Error(`Expected answer for ${nextQuestion.id}, received ${questionId}.`);
+      }
+
       const numericValue = Number(value);
       runtime.exports.app.answers[questionId] = numericValue;
 
@@ -370,11 +395,13 @@ export function createSurveySession(runtime, { preview = false } = {}) {
       return this.getProgress();
     },
     computeResult() {
+      const progress = this.getProgress();
+      if (!progress.complete) {
+        throw new Error('All visible questions must be answered before computing a result.');
+      }
+
+      finalized = true;
       return buildResultSummary(runtime, runtime.exports.app.answers);
-    },
-    reset() {
-      runtime.exports.startTest(preview);
-      return this.getVisibleQuestions();
     }
   };
 }
@@ -531,16 +558,12 @@ export function buildResultSummary(runtime, answersInput = runtime.exports.app.a
   };
 }
 
-export function getQuestionMetaLabel(question, { preview = false, dimensionMeta = {} } = {}) {
+export function getQuestionMetaLabel(question) {
   if (question.special) {
     return '补充题';
   }
 
-  if (!preview) {
-    return '维度已隐藏';
-  }
-
-  return dimensionMeta[question.dim]?.name ?? '维度已隐藏';
+  return '维度已隐藏';
 }
 
 export function findOptionValue(question, rawInput) {

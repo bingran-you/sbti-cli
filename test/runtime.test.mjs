@@ -106,22 +106,71 @@ test('formatOptionCode follows the website letter labels', () => {
 });
 
 test('bundled runtime only inserts the second drink question after selecting 饮酒', async () => {
-  const runtime = await loadBundledRuntime(123);
-  const session = createSurveySession(runtime);
-  let visibleQuestions = session.getVisibleQuestions();
+  const runtimeWithoutDrink = await loadBundledRuntime(123);
+  const sessionWithoutDrink = createSurveySession(runtimeWithoutDrink);
 
+  while (sessionWithoutDrink.getCurrentQuestion().id !== 'drink_gate_q1') {
+    const currentQuestion = sessionWithoutDrink.getCurrentQuestion();
+    sessionWithoutDrink.answerQuestion(currentQuestion.id, currentQuestion.options[0].value);
+  }
+
+  let visibleQuestions = sessionWithoutDrink.getVisibleQuestions();
   assert.equal(visibleQuestions.filter((question) => question.id === 'drink_gate_q2').length, 0);
 
-  session.answerQuestion('drink_gate_q1', 1);
-  visibleQuestions = session.getVisibleQuestions();
+  const drinkGateQuestion = sessionWithoutDrink.getCurrentQuestion();
+  sessionWithoutDrink.answerQuestion(drinkGateQuestion.id, 1);
+  visibleQuestions = sessionWithoutDrink.getVisibleQuestions();
   assert.equal(visibleQuestions.filter((question) => question.id === 'drink_gate_q2').length, 0);
 
-  session.answerQuestion('drink_gate_q1', 3);
-  visibleQuestions = session.getVisibleQuestions();
+  const runtimeWithDrink = await loadBundledRuntime(123);
+  const sessionWithDrink = createSurveySession(runtimeWithDrink);
+
+  while (sessionWithDrink.getCurrentQuestion().id !== 'drink_gate_q1') {
+    const currentQuestion = sessionWithDrink.getCurrentQuestion();
+    sessionWithDrink.answerQuestion(currentQuestion.id, currentQuestion.options[0].value);
+  }
+
+  sessionWithDrink.answerQuestion('drink_gate_q1', 3);
+  visibleQuestions = sessionWithDrink.getVisibleQuestions();
   const drinkGateIndex = visibleQuestions.findIndex((question) => question.id === 'drink_gate_q1');
 
   assert.ok(drinkGateIndex >= 0);
   assert.equal(visibleQuestions[drinkGateIndex + 1].id, 'drink_gate_q2');
+});
+
+test('survey sessions stay append-only and only compute after completion', async () => {
+  const runtime = await loadBundledRuntime(2048);
+  const session = createSurveySession(runtime);
+  const visibleQuestions = session.getVisibleQuestions();
+  const firstQuestion = session.getCurrentQuestion();
+
+  assert.equal(typeof session.reset, 'undefined');
+  assert.throws(
+    () => session.computeResult(),
+    /All visible questions must be answered before computing a result/
+  );
+  assert.throws(
+    () => session.answerQuestion(visibleQuestions[1].id, visibleQuestions[1].options[0].value),
+    new RegExp(`Expected answer for ${firstQuestion.id}`)
+  );
+
+  session.answerQuestion(firstQuestion.id, firstQuestion.options[0].value);
+  assert.throws(
+    () => session.answerQuestion(firstQuestion.id, firstQuestion.options[1].value),
+    /Expected answer for/
+  );
+
+  while (!session.getProgress().complete) {
+    const currentQuestion = session.getCurrentQuestion();
+    session.answerQuestion(currentQuestion.id, currentQuestion.options[0].value);
+  }
+
+  const result = session.computeResult();
+  assert.ok(result.finalType.code);
+  assert.throws(
+    () => session.answerQuestion(firstQuestion.id, firstQuestion.options[0].value),
+    /already been finalized/
+  );
 });
 
 test('explicit dimension stats produce the expected result string grouping', async () => {

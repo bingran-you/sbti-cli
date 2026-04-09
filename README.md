@@ -108,20 +108,17 @@ node src/cli.mjs
 | `npm run sbti` | Start a normal interactive run |
 | `npm run sbti -- --seed 42` | Use a deterministic shuffle seed |
 | `npm run sbti -- --json` | Print the final result as JSON |
-| `npm run sbti -- --preview-dimensions` | Show dimension labels while answering |
 | `npm run export-images` | Rebuild the local poster manifest and gallery from bundled assets |
 
 ### Interactive Controls
 
 Once the CLI starts, you answer one question at a time:
+Each answer is locked in for that run as soon as you submit it.
 
 | Input | Action |
 |---|---|
 | `A / B / C / D` | Select the current option |
-| `b` | Go back to the previous question |
-| `Enter` | Keep the current answer and move on |
 | `q` | Quit without submitting |
-| `question number` | After finishing, jump back to a specific question |
 
 ### Typical Run
 
@@ -136,7 +133,7 @@ Question source: bundled:sbti-main.js
 Question 1 / 31 · dimension hidden
 ...
 
-Enter A/B/C/D, or b to go back.
+Enter A/B/C/D, or q to quit.
 > C
 ```
 

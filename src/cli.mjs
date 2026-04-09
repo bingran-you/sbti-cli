@@ -16,7 +16,6 @@ function parseArgs(argv) {
   const options = {
     help: false,
     json: false,
-    previewDimensions: false,
     seed: null
   };
 
@@ -30,11 +29,6 @@ function parseArgs(argv) {
 
     if (arg === '--json') {
       options.json = true;
-      continue;
-    }
-
-    if (arg === '--preview-dimensions') {
-      options.previewDimensions = true;
       continue;
     }
 
@@ -59,26 +53,13 @@ Usage:
 
 Options:
   --seed <number>              Use deterministic question ordering for testing.
-  --preview-dimensions         Show dimension labels while answering.
   --json                       Print the final result as JSON.
   --help, -h                   Show this help message.
 `);
 }
 
-function formatCurrentAnswer(question, value) {
-  const optionIndex = question.options.findIndex((option) => option.value === value);
-  if (optionIndex === -1) {
-    return null;
-  }
-
-  return `${formatOptionCode(optionIndex)}. ${question.options[optionIndex].label}`;
-}
-
-function printQuestion(question, index, total, existingAnswer, options, runtime) {
-  const metaLabel = getQuestionMetaLabel(question, {
-    preview: options.previewDimensions,
-    dimensionMeta: runtime.exports.dimensionMeta
-  });
+function printQuestion(question, index, total) {
+  const metaLabel = getQuestionMetaLabel(question);
 
   console.log(`\n第 ${index + 1} 题 / ${total} · ${metaLabel}`);
   console.log(question.text);
@@ -88,16 +69,7 @@ function printQuestion(question, index, total, existingAnswer, options, runtime)
     console.log(`  ${formatOptionCode(optionIndex)}. ${option.label}`);
   });
 
-  if (existingAnswer !== undefined) {
-    const currentAnswer = formatCurrentAnswer(question, existingAnswer);
-    if (currentAnswer) {
-      console.log(`\n当前答案: ${currentAnswer}`);
-      console.log('直接回车保留当前答案，输入 b 返回上一题。');
-      return;
-    }
-  }
-
-  console.log('\n输入 A/B/C/D 选择，或输入 b 返回上一题。');
+  console.log('\n输入 A/B/C/D 选择，或输入 q 退出。');
 }
 
 function printResult(result, runtime) {
@@ -153,9 +125,7 @@ async function run() {
   const runtime = await loadSbtiRuntime({
     random
   });
-  const session = createSurveySession(runtime, {
-    preview: options.previewDimensions
-  });
+  const session = createSurveySession(runtime);
 
   const rl = createInterface({
     input: process.stdin,
@@ -168,61 +138,16 @@ async function run() {
     console.log(`随机种子: ${options.seed}`);
   }
 
-  let index = 0;
-
   try {
-    while (true) {
-      const visibleQuestions = session.getVisibleQuestions();
-      const answers = session.getAnswers();
+    while (!session.getProgress().complete) {
       const progress = session.getProgress();
-
-      if (index >= visibleQuestions.length) {
-        const completionAnswer = await rl.question(
-          `\n已完成 ${progress.done} / ${progress.total}。直接回车提交，输入题号返回修改，或输入 q 退出: `
-        );
-        const normalized = completionAnswer.trim();
-
-        if (!normalized) {
-          break;
-        }
-
-        if (/^(q|quit|exit)$/i.test(normalized)) {
-          console.log('已退出，未提交结果。');
-          return;
-        }
-
-        const targetIndex = Number(normalized);
-        if (Number.isInteger(targetIndex) && targetIndex >= 1 && targetIndex <= visibleQuestions.length) {
-          index = targetIndex - 1;
-          continue;
-        }
-
-        console.log('请输入有效题号，或直接回车提交。');
-        continue;
-      }
-
-      const question = visibleQuestions[index];
-      const existingAnswer = answers[question.id];
-      printQuestion(question, index, visibleQuestions.length, existingAnswer, options, runtime);
+      const question = session.getCurrentQuestion();
+      printQuestion(question, progress.done, progress.total);
       const response = await rl.question('> ');
       const normalized = response.trim();
 
       if (!normalized) {
-        if (existingAnswer !== undefined) {
-          index += 1;
-          continue;
-        }
-
         console.log('请输入一个选项。');
-        continue;
-      }
-
-      if (/^(b|back)$/i.test(normalized)) {
-        if (index > 0) {
-          index -= 1;
-        } else {
-          console.log('已经是第一题了。');
-        }
         continue;
       }
 
@@ -238,7 +163,6 @@ async function run() {
       }
 
       session.answerQuestion(question.id, value);
-      index += 1;
     }
   } finally {
     rl.close();
