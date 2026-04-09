@@ -54,7 +54,7 @@
 
 ## 🎯 What Is This
 
-This repository turns [**sbti.fancc.de5.net**](https://sbti.fancc.de5.net) into a local command-line runner.
+This repository turns **SBTI** into a local command-line runner.
 
 Key traits:
 
@@ -73,9 +73,8 @@ Getting started only takes four steps:
 | Step | What to do |
 |---|---|
 | **1️⃣ Install Node.js** | Use **Node.js 18+** so `node` and `npm` are available |
-| **2️⃣ Clone the repo** | Download this repository locally |
-| **3️⃣ Install dependencies** | Run `npm install` |
-| **4️⃣ Verify the setup** | Run `npm test` to confirm the CLI and fallback paths work |
+| **2️⃣ Install dependencies** | Run `npm install` |
+| **3️⃣ Verify the setup** | Run `npm test` to confirm the CLI and fallback paths work |
 
 ```bash
 git clone https://github.com/bingran-you/sbti-cli.git
