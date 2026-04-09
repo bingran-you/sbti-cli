@@ -83,6 +83,8 @@ npm install
 npm test
 ```
 
+Published npm tarballs only ship the standalone `dist/sbti-cli.mjs` bundle plus package metadata. Development sources, tests, scripts, and image assets stay in the repository.
+
 After setup, start the CLI with:
 
 ```bash
@@ -249,8 +251,11 @@ All 27 result posters are checked into [`assets/type-images/`](assets/type-image
 - [`src/runtime.mjs`](src/runtime.mjs) — bundled runtime loading, sandbox evaluation, and result summarization
 - [`src/bundled-data.mjs`](src/bundled-data.mjs) — bundled offline snapshot
 - [`src/type-images.mjs`](src/type-images.mjs) — image helpers and local gallery generation
+- [`dist/sbti-cli.mjs`](dist/sbti-cli.mjs) — standalone bundled CLI shipped in the npm package
+- [`scripts/build-dist.mjs`](scripts/build-dist.mjs) — generates the standalone publishable CLI bundle
 - [`scripts/export-type-images.mjs`](scripts/export-type-images.mjs) — local poster metadata rebuild
 - [`test/runtime.test.mjs`](test/runtime.test.mjs) — bundled runtime parity tests
+- [`test/package.test.mjs`](test/package.test.mjs) — publish-tarball surface checks
 - [`test/type-images.test.mjs`](test/type-images.test.mjs) — offline asset coverage
 
 ---

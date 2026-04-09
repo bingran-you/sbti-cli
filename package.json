@@ -1,17 +1,25 @@
 {
   "name": "sbti-cli",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "description": "Standalone CLI runner for the public SBTI survey.",
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE",
+    "README.md",
+    "README.zh-CN.md"
+  ],
   "bin": {
-    "sbti-cli": "./src/cli.mjs"
+    "sbti-cli": "./dist/sbti-cli.mjs"
   },
   "scripts": {
+    "build:dist": "node scripts/build-dist.mjs",
     "start": "node src/cli.mjs",
     "sbti": "node src/cli.mjs",
     "export-images": "node scripts/export-type-images.mjs",
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "prepack": "npm run build:dist"
   },
   "engines": {
     "node": ">=18"
