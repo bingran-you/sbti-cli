@@ -2,13 +2,13 @@
 
 <p align="center">
   <em>SBTI CLI - Test SBTI for your agents.</em><br>
-  A Node.js CLI with <strong>live sync</strong>, <strong>offline fallback</strong>, and <strong>result-image export</strong>.
+  A Node.js CLI with <strong>offline-only execution</strong>, <strong>bundled survey data</strong>, and <strong>result-image export</strong>.
 </p>
 
 <p align="center">
   <a href="https://sbti.fancc.de5.net"><img alt="Original test" src="https://img.shields.io/badge/original-sbti.fancc.de5.net-4CAF50?style=flat-square"></a>
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-18%2B-339933?style=flat-square">
-  <img alt="Runtime mode" src="https://img.shields.io/badge/runtime-live%20%2B%20offline-blue?style=flat-square">
+  <img alt="Runtime mode" src="https://img.shields.io/badge/runtime-offline--only-blue?style=flat-square">
   <img alt="Result images" src="https://img.shields.io/badge/result%20images-27-orange?style=flat-square">
   <img alt="Questions" src="https://img.shields.io/badge/questions-30%20%2B%201%20hidden-purple?style=flat-square">
   <img alt="License" src="https://img.shields.io/badge/license-MIT-red?style=flat-square">
@@ -42,7 +42,6 @@
 - [🧬 Core Capabilities](#-core-capabilities)
 - [🎭 Result Images \& Offline Resources](#-result-images--offline-resources)
   - [Export All Result Images](#export-all-result-images)
-  - [Refresh the Offline Snapshot](#refresh-the-offline-snapshot)
 - [🔬 Data Sources \& How It Works](#-data-sources--how-it-works)
   - [Why It Can Match the Website So Closely](#why-it-can-match-the-website-so-closely)
   - [Where the Poster Art Comes From](#where-the-poster-art-comes-from)
@@ -73,8 +72,9 @@ Getting started only takes four steps:
 | Step | What to do |
 |---|---|
 | **1️⃣ Install Node.js** | Use **Node.js 18+** so `node` and `npm` are available |
-| **2️⃣ Install dependencies** | Run `npm install` |
-| **3️⃣ Verify the setup** | Run `npm test` to confirm the CLI and fallback paths work |
+| **2️⃣ Clone the repo** | Download this repository locally |
+| **3️⃣ Install dependencies** | Run `npm install` |
+| **4️⃣ Verify the setup** | Run `npm test` to confirm the bundled offline runtime works |
 
 ```bash
 git clone https://github.com/bingran-you/sbti-cli.git
@@ -109,10 +109,7 @@ node src/cli.mjs
 | `npm run sbti -- --seed 42` | Use a deterministic shuffle seed |
 | `npm run sbti -- --json` | Print the final result as JSON |
 | `npm run sbti -- --preview-dimensions` | Show dimension labels while answering |
-| `npm run sbti -- --source-file ./main.js` | Load survey logic from a local `main.js` |
-| `npm run sbti -- --source-url https://.../main.js` | Load survey logic from a custom remote script |
-| `npm run export-images` | Export all 27 result posters and build a local gallery |
-| `npm run refresh-snapshot` | Refresh the bundled offline snapshot from the live site |
+| `npm run export-images` | Rebuild the local poster manifest and gallery from bundled assets |
 
 ### Interactive Controls
 
@@ -134,7 +131,7 @@ npm run sbti
 
 ```text
 SBTI CLI
-Question source: https://sbti.fancc.de5.net/main.js
+Question source: bundled:sbti-main.js
 
 Question 1 / 31 · dimension hidden
 ...
@@ -142,8 +139,6 @@ Question 1 / 31 · dimension hidden
 Enter A/B/C/D, or b to go back.
 > C
 ```
-
-If the live site cannot be loaded, the CLI automatically switches to the bundled offline snapshot and prints a clear notice before the questionnaire starts.
 
 ---
 
@@ -156,24 +151,19 @@ If the live site cannot be loaded, the CLI automatically switches to the bundled
   <th>Details</th>
 </tr>
 <tr>
-  <td><strong>🎯 Live website runtime</strong></td>
-  <td>Loads the real <code>main.js</code> first</td>
-  <td>The CLI reuses the website's own flow, scoring, and special branches whenever the live script is available</td>
-</tr>
-<tr>
-  <td><strong>🛟 Offline fallback</strong></td>
-  <td>Bundled snapshot takes over automatically</td>
-  <td>If the website is down, slow, or broken, the CLI still works without manual intervention</td>
+  <td><strong>🛟 Offline runtime</strong></td>
+  <td>Always runs from the bundled snapshot</td>
+  <td>The CLI never fetches the live website at runtime, so every questionnaire run stays fully local</td>
 </tr>
 <tr>
   <td><strong>🖼️ Result-image export</strong></td>
-  <td>27 embedded posters can be extracted</td>
-  <td>The repo can generate local image files, a JSON manifest, and an HTML gallery</td>
+  <td>27 bundled posters can be indexed locally</td>
+  <td>The repo can rebuild a JSON manifest and an HTML gallery from the checked-in image files</td>
 </tr>
 <tr>
   <td><strong>🧪 Regression tests</strong></td>
-  <td>Live + offline verification</td>
-  <td>Includes runtime parity, 50 deterministic result cases, image extraction checks, and fallback coverage</td>
+  <td>Bundled-runtime verification</td>
+  <td>Includes runtime parity, 50 deterministic result cases, and offline asset coverage</td>
 </tr>
 <tr>
   <td><strong>🧰 Scriptable runtime API</strong></td>
@@ -198,21 +188,17 @@ If the live site cannot be loaded, the CLI automatically switches to the bundled
     </td>
     <td align="center" width="33%">
       <a href="src/bundled-data.mjs"><img src="assets/type-images/SEXY.png" width="180"><br><strong>Offline snapshot</strong></a><br>
-      <sub>The built-in survey data used when the website cannot be reached</sub>
+      <sub>The built-in survey data used for every CLI run</sub>
     </td>
   </tr>
   <tr>
     <td align="center">
       <a href="scripts/export-type-images.mjs"><img src="assets/type-images/MALO.png" width="180"><br><strong>Image export script</strong></a><br>
-      <sub>Decodes <code>TYPE_IMAGES</code> from <code>main.js</code> into local files</sub>
-    </td>
-    <td align="center">
-      <a href="scripts/update-bundled-data.mjs"><img src="assets/type-images/DRUNK.png" width="180"><br><strong>Snapshot refresh script</strong></a><br>
-      <sub>Updates the bundled offline snapshot from the live website</sub>
+      <sub>Rebuilds the local poster manifest and gallery from the checked-in image files</sub>
     </td>
     <td align="center">
       <a href="test/runtime.test.mjs"><img src="assets/type-images/HHHH.png" width="180"><br><strong>Parity tests</strong></a><br>
-      <sub>Checks that CLI results stay aligned with the website logic</sub>
+      <sub>Checks that CLI results stay aligned with the bundled scoring logic</sub>
     </td>
   </tr>
 </table>
@@ -229,23 +215,13 @@ This generates:
 - [`assets/type-images/manifest.json`](assets/type-images/manifest.json) — poster manifest
 - [`assets/type-images/`](assets/type-images/) — all decoded `.png` / `.jpg` files
 
-### Refresh the Offline Snapshot
-
-```bash
-npm run refresh-snapshot
-```
-
-That command pulls the latest live `main.js` and rewrites [`src/bundled-data.mjs`](src/bundled-data.mjs) so the offline mode stays as current as possible.
-
----
-
 ## 🔬 Data Sources & How It Works
 
 ### Why It Can Match the Website So Closely
 
-The website packs its survey logic into `main.js`. This repository uses [`src/runtime.mjs`](src/runtime.mjs) plus Node.js `vm` sandboxing to evaluate that script in a tiny fake browser environment, then expose the internal constants and result helpers for local use.
+This repository stores a bundled snapshot of the survey data and scoring logic in [`src/bundled-data.mjs`](src/bundled-data.mjs). [`src/runtime.mjs`](src/runtime.mjs) turns that snapshot into a sandboxed runtime so the CLI can stay local while preserving the original question flow and result math.
 
-The CLI therefore prefers the same runtime objects the site uses:
+The CLI therefore uses the same runtime objects throughout every run:
 
 | Runtime object | Content |
 |---|---|
@@ -268,18 +244,17 @@ That is why the CLI can stay aligned with:
 
 ### Where the Poster Art Comes From
 
-The website also embeds a `TYPE_IMAGES` object directly inside `main.js`. All 27 posters are stored as `data:image/png;base64,...` or `data:image/jpeg;base64,...`. [`src/type-images.mjs`](src/type-images.mjs) extracts those images, and [`scripts/export-type-images.mjs`](scripts/export-type-images.mjs) writes them out as local files.
+All 27 result posters are checked into [`assets/type-images/`](assets/type-images/). [`scripts/export-type-images.mjs`](scripts/export-type-images.mjs) rebuilds the manifest and gallery pages from those local files.
 
 ### Most Important Files in This Repo
 
 - [`src/cli.mjs`](src/cli.mjs) — CLI entry point and interactive questionnaire flow
-- [`src/runtime.mjs`](src/runtime.mjs) — live runtime loading, sandbox evaluation, offline fallback, and result summarization
+- [`src/runtime.mjs`](src/runtime.mjs) — bundled runtime loading, sandbox evaluation, and result summarization
 - [`src/bundled-data.mjs`](src/bundled-data.mjs) — bundled offline snapshot
-- [`src/type-images.mjs`](src/type-images.mjs) — `TYPE_IMAGES` parsing and image helpers
-- [`scripts/export-type-images.mjs`](scripts/export-type-images.mjs) — poster export and gallery generation
-- [`scripts/update-bundled-data.mjs`](scripts/update-bundled-data.mjs) — offline snapshot refresh
-- [`test/runtime.test.mjs`](test/runtime.test.mjs) — live parity and offline fallback tests
-- [`test/type-images.test.mjs`](test/type-images.test.mjs) — image extraction coverage
+- [`src/type-images.mjs`](src/type-images.mjs) — image helpers and local gallery generation
+- [`scripts/export-type-images.mjs`](scripts/export-type-images.mjs) — local poster metadata rebuild
+- [`test/runtime.test.mjs`](test/runtime.test.mjs) — bundled runtime parity tests
+- [`test/type-images.test.mjs`](test/type-images.test.mjs) — offline asset coverage
 
 ---
 

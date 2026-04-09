@@ -2,13 +2,13 @@
 
 <p align="center">
   <em>把 SBTI 人格测试搬进终端，同时尽量保留官网同一套运行时与结果资源。</em><br>
-  一个支持 <strong>在线同步</strong>、<strong>离线回退</strong>、<strong>结果图导出</strong> 的 Node.js CLI。
+  一个支持 <strong>纯离线运行</strong>、<strong>内置题库快照</strong>、<strong>结果图导出</strong> 的 Node.js CLI。
 </p>
 
 <p align="center">
   <a href="https://sbti.fancc.de5.net"><img alt="原测试" src="https://img.shields.io/badge/原测试-sbti.fancc.de5.net-4CAF50?style=flat-square"></a>
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-18%2B-339933?style=flat-square">
-  <img alt="运行模式" src="https://img.shields.io/badge/运行模式-在线%20%2B%20离线-blue?style=flat-square">
+  <img alt="运行模式" src="https://img.shields.io/badge/运行模式-纯离线-blue?style=flat-square">
   <img alt="结果图" src="https://img.shields.io/badge/结果图-27%20张-orange?style=flat-square">
   <img alt="题目" src="https://img.shields.io/badge/题目-30%20%2B%201%20隐藏-purple?style=flat-square">
   <img alt="许可证" src="https://img.shields.io/badge/许可证-MIT-red?style=flat-square">
@@ -45,20 +45,20 @@
 
 ## 🎯 这是什么
 
-本仓库把 [**sbti.fancc.de5.net**](https://sbti.fancc.de5.net) 的 SBTI 人格测试做成了一个可在本地终端运行的 CLI。它不是手写一套“像官网”的逻辑，而是尽量复用官网自己的 `main.js` 运行时，因此保留了这些关键特性：
+本仓库把 [**sbti.fancc.de5.net**](https://sbti.fancc.de5.net) 的 SBTI 人格测试做成了一个可在本地终端运行的 CLI。它不是手写一套“像官网”的逻辑，而是把题库和结果逻辑打包成内置快照，在本地 sandbox 中运行，因此保留了这些关键特性：
 
 - 🎲 **和官网一致的题目行为**：30 道常规题随机顺序、饮酒分支插入位置、隐藏题触发规则都保持一致
 - 📊 **和官网一致的结果计算**：15 维打分、H / M / L 分档、25 个标准人格匹配、`DRUNK` 覆盖、`HHHH` 兜底都保持一致
-- 📴 **官网挂了也能跑**：默认优先拉取线上 `main.js`，失败后会自动切换到仓库内置的离线快照
-- 🖼️ **结果图可本地导出**：27 张官网内嵌结果海报都能从 `main.js` 解码导出成独立图片
-- ✅ **有对齐测试兜底**：除了基础单测，还包含官网运行时对齐测试和 50 组结果回归测试
+- 📴 **每次都纯离线运行**：CLI 每次都直接使用仓库内置快照，不依赖 live website
+- 🖼️ **结果图可本地整理**：27 张结果海报已随仓库提供，可重建本地 manifest 与画廊
+- ✅ **有对齐测试兜底**：除了基础单测，还包含 50 组结果回归测试与离线资源完整性验证
 
 如果你想：
 
 - 在终端里完整做一次 SBTI
 - 用脚本研究结果逻辑
-- 在官网不可用时继续跑测试
-- 把 27 张官方结果图批量导出来
+- 在完全离线的环境里继续跑测试
+- 重建 27 张结果图的本地资源清单
 
 这个仓库就是干这个的。
 
@@ -73,7 +73,7 @@
 | **1️⃣ 准备环境** | 安装 **Node.js 18+**，确保本机可以运行 `node` 和 `npm` |
 | **2️⃣ 拉取仓库** | `git clone` 当前仓库，然后进入目录 |
 | **3️⃣ 初始化项目** | 运行 `npm install` |
-| **4️⃣ 验证环境** | 运行 `npm test`，确认本地 CLI 与离线/在线逻辑都正常 |
+| **4️⃣ 验证环境** | 运行 `npm test`，确认本地 CLI 与内置离线运行时都正常 |
 
 ```bash
 git clone https://github.com/bingran-you/sbti-cli.git
@@ -108,10 +108,7 @@ node src/cli.mjs
 | `npm run sbti -- --seed 42` | 固定随机种子，方便复现题目顺序 |
 | `npm run sbti -- --json` | 直接输出 JSON 结果 |
 | `npm run sbti -- --preview-dimensions` | 答题时显示题目所属维度 |
-| `npm run sbti -- --source-file ./main.js` | 从本地 `main.js` 加载题库和结果逻辑 |
-| `npm run sbti -- --source-url https://.../main.js` | 指向自定义线上脚本 |
-| `npm run export-images` | 导出 27 张结果图和本地画廊 |
-| `npm run refresh-snapshot` | 用当前线上 `main.js` 刷新仓库内置离线快照 |
+| `npm run export-images` | 基于仓库内已有图片重建 manifest 和本地画廊 |
 
 ### 交互方式
 
@@ -133,7 +130,7 @@ npm run sbti
 
 ```text
 SBTI 人格测试 CLI
-题库来源: https://sbti.fancc.de5.net/main.js
+题库来源: bundled:sbti-main.js
 
 第 1 题 / 31 · 维度已隐藏
 ...
@@ -141,10 +138,6 @@ SBTI 人格测试 CLI
 输入 A/B/C/D 选择，或输入 b 返回上一题。
 > C
 ```
-
-如果线上题库加载失败，CLI 会自动切到内置离线快照，并在开头明确提示你现在不是跑的线上版本。
-
----
 
 ## 🧬 核心能力一览
 
@@ -155,24 +148,19 @@ SBTI 人格测试 CLI
   <th>说明</th>
 </tr>
 <tr>
-  <td><strong>🎯 官网运行时</strong></td>
-  <td>优先直接加载线上 <code>main.js</code></td>
-  <td>题目顺序、饮酒隐藏题、打分、匹配、特殊分支都走官网同一套逻辑</td>
-</tr>
-<tr>
-  <td><strong>🛟 离线回退</strong></td>
-  <td>内置题库快照自动接管</td>
-  <td>官网超时、挂掉或脚本异常时，CLI 仍然可用，不会整个失效</td>
+  <td><strong>🛟 离线运行时</strong></td>
+  <td>始终直接加载内置快照</td>
+  <td>题目顺序、饮酒隐藏题、打分、匹配、特殊分支都走本地内置的同一套逻辑</td>
 </tr>
 <tr>
   <td><strong>🖼️ 结果图资源</strong></td>
-  <td>27 张内嵌海报可导出</td>
+  <td>27 张已收录海报可本地整理</td>
   <td>支持生成 <code>manifest.json</code> 与本地 <code>index.html</code> 画廊</td>
 </tr>
 <tr>
   <td><strong>🧪 回归测试</strong></td>
-  <td>在线 + 离线双路径验证</td>
-  <td>包含官网对齐测试、50 组结果回归、图片提取测试、离线兜底测试</td>
+  <td>内置运行时验证</td>
+  <td>包含 50 组结果回归、图片完整性测试与离线运行路径验证</td>
 </tr>
 <tr>
   <td><strong>🧰 开发接口</strong></td>
@@ -197,21 +185,17 @@ SBTI 人格测试 CLI
     </td>
     <td align="center" width="33%">
       <a href="src/bundled-data.mjs"><img src="assets/type-images/SEXY.png" width="180"><br><strong>离线快照</strong></a><br>
-      <sub>官网不可用时自动接管的内置题库与结果数据</sub>
+      <sub>每次 CLI 运行都会直接使用的内置题库与结果数据</sub>
     </td>
   </tr>
   <tr>
     <td align="center">
       <a href="scripts/export-type-images.mjs"><img src="assets/type-images/MALO.png" width="180"><br><strong>图片导出脚本</strong></a><br>
-      <sub>把 <code>TYPE_IMAGES</code> 从 <code>main.js</code> 解码成独立图片</sub>
-    </td>
-    <td align="center">
-      <a href="scripts/update-bundled-data.mjs"><img src="assets/type-images/DRUNK.png" width="180"><br><strong>快照刷新脚本</strong></a><br>
-      <sub>在线时一键刷新仓库内置的离线数据</sub>
+      <sub>基于仓库内已有图片重建 manifest 和本地画廊</sub>
     </td>
     <td align="center">
       <a href="test/runtime.test.mjs"><img src="assets/type-images/HHHH.png" width="180"><br><strong>对齐测试</strong></a><br>
-      <sub>确保 CLI 的结果分支和官网保持一致</sub>
+      <sub>确保 CLI 的结果分支和内置逻辑保持一致</sub>
     </td>
   </tr>
 </table>
@@ -228,23 +212,13 @@ npm run export-images
 - [`assets/type-images/manifest.json`](assets/type-images/manifest.json) — 27 张图片的清单
 - [`assets/type-images/`](assets/type-images/) — 全部解码后的 `.png` / `.jpg` 文件
 
-### 刷新离线快照
-
-```bash
-npm run refresh-snapshot
-```
-
-这个命令会重新抓取线上 `main.js`，然后覆盖 [`src/bundled-data.mjs`](src/bundled-data.mjs)，让离线模式尽量跟上官网的最新版本。
-
----
-
 ## 🔬 数据来源与原理
 
 ### 为什么能做到和官网行为一致
 
-官网的测试逻辑全部打包在 `main.js` 里。本仓库的 [`src/runtime.mjs`](src/runtime.mjs) 使用 Node.js 的 `vm` 模块把这段脚本放进一个很小的 sandbox 里运行，再把内部常量和核心函数挂到运行时导出对象上复用。
+本仓库把题库和结果逻辑存成 [`src/bundled-data.mjs`](src/bundled-data.mjs) 里的内置快照，再通过 [`src/runtime.mjs`](src/runtime.mjs) 用 Node.js 的 `vm` 模块放进一个很小的 sandbox 里运行。
 
-CLI 不是手写“差不多”的逻辑，而是优先直接跑官网自己的：
+CLI 不是手写“差不多”的逻辑，而是每次都直接跑这份内置快照里的同一套对象：
 
 | 运行时对象 | 内容 |
 |---|---|
@@ -267,18 +241,17 @@ CLI 不是手写“差不多”的逻辑，而是优先直接跑官网自己的�
 
 ### 结果图从哪里来
 
-官网 `main.js` 里还内嵌了一个 `TYPE_IMAGES` 对象，27 张人物海报直接以 `data:image/png;base64,...` / `data:image/jpeg;base64,...` 的形式打包在脚本中。[`src/type-images.mjs`](src/type-images.mjs) 负责把它们解析出来，[`scripts/export-type-images.mjs`](scripts/export-type-images.mjs) 负责写成独立文件和本地画廊。
+27 张人物海报已经随仓库一起存放在 [`assets/type-images/`](assets/type-images/) 中。[`scripts/export-type-images.mjs`](scripts/export-type-images.mjs) 负责根据这些本地文件重建 manifest 和本地画廊。
 
 ### 本仓库里最关键的文件
 
 - [`src/cli.mjs`](src/cli.mjs) — 命令行交互入口
-- [`src/runtime.mjs`](src/runtime.mjs) — 官网脚本加载、sandbox 运行、离线快照回退、结果汇总
-- [`src/bundled-data.mjs`](src/bundled-data.mjs) — 官网不可用时使用的内置快照
-- [`src/type-images.mjs`](src/type-images.mjs) — `TYPE_IMAGES` 解析与图片工具
-- [`scripts/export-type-images.mjs`](scripts/export-type-images.mjs) — 导出 27 张结果图与画廊
-- [`scripts/update-bundled-data.mjs`](scripts/update-bundled-data.mjs) — 刷新离线快照
-- [`test/runtime.test.mjs`](test/runtime.test.mjs) — 官网结果对齐与离线兜底测试
-- [`test/type-images.test.mjs`](test/type-images.test.mjs) — 图片提取与完整性测试
+- [`src/runtime.mjs`](src/runtime.mjs) — 内置运行时加载、sandbox 运行、结果汇总
+- [`src/bundled-data.mjs`](src/bundled-data.mjs) — CLI 使用的内置快照
+- [`src/type-images.mjs`](src/type-images.mjs) — 图片工具与本地画廊生成
+- [`scripts/export-type-images.mjs`](scripts/export-type-images.mjs) — 重建结果图 manifest 与画廊
+- [`test/runtime.test.mjs`](test/runtime.test.mjs) — 内置运行时对齐测试
+- [`test/type-images.test.mjs`](test/type-images.test.mjs) — 图片资源完整性测试
 
 ---
 
@@ -303,7 +276,7 @@ CLI 不是手写“差不多”的逻辑，而是优先直接跑官网自己的�
   <tr>
     <td><strong>sbti-cli</strong></td>
     <td><a href="https://github.com/bingran-you">Bingran You (@bingran-you)</a></td>
-    <td>把官网 <code>main.js</code> sandbox 化，补上离线快照、结果图导出与测试体系，提供一个可直接使用的 CLI</td>
+    <td>把题库快照 sandbox 化，补上离线运行、结果图整理与测试体系，提供一个可直接使用的 CLI</td>
   </tr>
 </table>
 
