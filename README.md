@@ -1,7 +1,7 @@
-<h1 align="center">SBTI CLI · Website-Equivalent Command-Line Runner</h1>
+<h1 align="center">SBTI CLI - Test SBTI for your agents.</h1>
 
 <p align="center">
-  <em>Run the SBTI survey in your terminal while staying as close as possible to the website's own runtime and result assets.</em><br>
+  <em>SBTI CLI - Test SBTI for your agents.</em><br>
   A Node.js CLI with <strong>live sync</strong>, <strong>offline fallback</strong>, and <strong>result-image export</strong>.
 </p>
 
@@ -32,37 +32,37 @@
 
 ## 📖 Table of Contents
 
-- [What Is This](#-what-is-this)
-- [Installation & Setup](#-installation--setup)
-- [Using the CLI](#-using-the-cli)
-- [Core Capabilities](#-core-capabilities)
-- [Result Images & Offline Resources](#-result-images--offline-resources)
-- [Data Sources & How It Works](#-data-sources--how-it-works)
-- [Acknowledgements](#-acknowledgements)
-- [License](#-license)
+- [📖 Table of Contents](#-table-of-contents)
+- [🎯 What Is This](#-what-is-this)
+- [🧭 Installation \& Setup](#-installation--setup)
+- [🧪 Using the CLI](#-using-the-cli)
+  - [Common Commands](#common-commands)
+  - [Interactive Controls](#interactive-controls)
+  - [Typical Run](#typical-run)
+- [🧬 Core Capabilities](#-core-capabilities)
+- [🎭 Result Images \& Offline Resources](#-result-images--offline-resources)
+  - [Export All Result Images](#export-all-result-images)
+  - [Refresh the Offline Snapshot](#refresh-the-offline-snapshot)
+- [🔬 Data Sources \& How It Works](#-data-sources--how-it-works)
+  - [Why It Can Match the Website So Closely](#why-it-can-match-the-website-so-closely)
+  - [Where the Poster Art Comes From](#where-the-poster-art-comes-from)
+  - [Most Important Files in This Repo](#most-important-files-in-this-repo)
+- [🙏 Acknowledgements](#-acknowledgements)
+- [📄 License](#-license)
 
 ---
 
 ## 🎯 What Is This
 
-This repository turns [**sbti.fancc.de5.net**](https://sbti.fancc.de5.net) into a local command-line runner. It does not hand-reimplement a “similar” survey; instead, it tries to reuse the website's own `main.js` runtime whenever possible, so the CLI stays aligned with the original behavior.
+This repository turns [**sbti.fancc.de5.net**](https://sbti.fancc.de5.net) into a local command-line runner.
 
 Key traits:
 
-- 🎲 **Website-equivalent question flow**: shuffled regular questions, drink-gate insertion, and hidden-question reveal follow the same runtime logic
-- 📊 **Website-equivalent scoring**: 15-dimension scoring, H / M / L bucketing, 25 normal-type ranking, `DRUNK` override, and `HHHH` fallback stay aligned with the site
-- 📴 **Offline-safe execution**: the CLI prefers the live website first, then automatically falls back to a bundled local snapshot if the site is unavailable
-- 🖼️ **Exportable result posters**: all 27 website poster images can be decoded from `main.js` into local files
-- ✅ **Regression coverage**: the repo includes live parity tests, offline fallback tests, and a 50-case result regression suite
-
-If you want to:
-
-- take the SBTI test from a terminal
-- inspect how the result logic works
-- keep using it while the website is down
-- export the official result posters locally
-
-this repo is built for exactly that.
+- 🎲 **Website-equivalent question flow**
+- 📊 **Website-equivalent scoring**
+- 📴 **Offline-safe execution**
+- 🖼️ **Exportable result posters**
+- ✅ **Regression coverage**
 
 ---
 
