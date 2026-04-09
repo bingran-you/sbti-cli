@@ -53,7 +53,7 @@
 
 ## 🎯 What Is This
 
-This repository turns [**sbti.fancc.de5.net**](https://sbti.fancc.de5.net) into a local command-line runner.
+This repository turns **SBTI** into a local command-line runner.
 
 Key traits:
 
