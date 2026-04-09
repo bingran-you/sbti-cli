@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  BUNDLED_SBTI_SOURCE_URL,
   buildResultSummary,
   computeDimensionStats,
   createSeededRandom,
@@ -220,6 +221,37 @@ test('live runtime falls back to HHHH when the best normal match stays below 60%
   assert.match(result.badge, /最高匹配仅/);
   assert.equal(result.flags.drinkTriggered, false);
   assert.equal(result.flags.fallbackTriggered, true);
+});
+
+test('runtime falls back to the bundled offline snapshot when the website is unavailable', async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => {
+    throw new Error('simulated outage');
+  };
+
+  try {
+    const runtime = await loadSbtiRuntime({
+      random: createSeededRandom(111)
+    });
+    const session = createSurveySession(runtime);
+    const answers = buildAnswersForPattern(runtime, 'HMHHLLLMLHMLLLL', {
+      drink_gate_q1: 1
+    });
+
+    runtime.exports.app.answers = answers;
+    const result = session.computeResult();
+
+    assert.equal(runtime.sourceKind, 'bundled');
+    assert.equal(runtime.sourceUrl, BUNDLED_SBTI_SOURCE_URL);
+    assert.match(runtime.sourceDescription, /内置离线快照/);
+    assert.match(runtime.fallbackReason, /自动切换到内置离线快照/);
+    assert.equal(runtime.exports.questions.length, 30);
+    assert.equal(result.resultPattern, 'HMH-HLL-LML-HML-LLL');
+    assert.equal(result.finalType.code, result.bestNormal.code);
+    assert.equal(result.flags.drinkTriggered, false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test('50 deterministic cases keep the local scoring model aligned with the live website runtime', async (t) => {

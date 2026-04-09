@@ -181,7 +181,7 @@ async function run() {
   const runtime = await loadSbtiRuntime({
     random,
     sourceText,
-    sourceUrl: options.sourceUrl
+    sourceUrl: options.sourceFile ?? options.sourceUrl
   });
   const session = createSurveySession(runtime, {
     preview: options.previewDimensions
@@ -193,7 +193,10 @@ async function run() {
   });
 
   console.log('SBTI 人格测试 CLI');
-  console.log(`题库来源: ${options.sourceFile ? options.sourceFile : options.sourceUrl}`);
+  if (runtime.fallbackReason) {
+    console.log(runtime.fallbackReason);
+  }
+  console.log(`题库来源: ${runtime.sourceDescription}`);
   if (options.seed !== null) {
     console.log(`随机种子: ${options.seed}`);
   }

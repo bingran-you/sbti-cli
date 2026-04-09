@@ -1,0 +1,223 @@
+{
+  "extractedFrom": "https://sbti.fancc.de5.net/main.js",
+  "extractedAt": "2026-04-09T20:36:03.675Z",
+  "count": 27,
+  "entries": [
+    {
+      "code": "CTRL",
+      "cn": "拿捏者",
+      "intro": "怎么样，被我拿捏了吧？",
+      "mimeType": "image/png",
+      "fileName": "CTRL.png",
+      "bytes": 131414
+    },
+    {
+      "code": "ATM-er",
+      "cn": "送钱者",
+      "intro": "你以为我很有钱吗？",
+      "mimeType": "image/png",
+      "fileName": "ATM-er.png",
+      "bytes": 157119
+    },
+    {
+      "code": "Dior-s",
+      "cn": "屌丝",
+      "intro": "等着我屌丝逆袭。",
+      "mimeType": "image/jpeg",
+      "fileName": "Dior-s.jpg",
+      "bytes": 54221
+    },
+    {
+      "code": "BOSS",
+      "cn": "领导者",
+      "intro": "方向盘给我，我来开。",
+      "mimeType": "image/png",
+      "fileName": "BOSS.png",
+      "bytes": 167151
+    },
+    {
+      "code": "THAN-K",
+      "cn": "感恩者",
+      "intro": "我感谢苍天！我感谢大地！",
+      "mimeType": "image/png",
+      "fileName": "THAN-K.png",
+      "bytes": 145963
+    },
+    {
+      "code": "OH-NO",
+      "cn": "哦不人",
+      "intro": "哦不！我怎么会是这个人格？！",
+      "mimeType": "image/png",
+      "fileName": "OH-NO.png",
+      "bytes": 207308
+    },
+    {
+      "code": "GOGO",
+      "cn": "行者",
+      "intro": "gogogo~出发咯",
+      "mimeType": "image/png",
+      "fileName": "GOGO.png",
+      "bytes": 163936
+    },
+    {
+      "code": "SEXY",
+      "cn": "尤物",
+      "intro": "您就是天生的尤物！",
+      "mimeType": "image/png",
+      "fileName": "SEXY.png",
+      "bytes": 165839
+    },
+    {
+      "code": "LOVE-R",
+      "cn": "多情者",
+      "intro": "爱意太满，现实显得有点贫瘠。",
+      "mimeType": "image/png",
+      "fileName": "LOVE-R.png",
+      "bytes": 195531
+    },
+    {
+      "code": "MUM",
+      "cn": "妈妈",
+      "intro": "或许...我可以叫你妈妈吗....?",
+      "mimeType": "image/png",
+      "fileName": "MUM.png",
+      "bytes": 136647
+    },
+    {
+      "code": "FAKE",
+      "cn": "伪人",
+      "intro": "已经，没有人类了。",
+      "mimeType": "image/png",
+      "fileName": "FAKE.png",
+      "bytes": 172477
+    },
+    {
+      "code": "OJBK",
+      "cn": "无所谓人",
+      "intro": "我说随便，是真的随便。",
+      "mimeType": "image/png",
+      "fileName": "OJBK.png",
+      "bytes": 133654
+    },
+    {
+      "code": "MALO",
+      "cn": "吗喽",
+      "intro": "人生是个副本，而我只是一只吗喽。",
+      "mimeType": "image/png",
+      "fileName": "MALO.png",
+      "bytes": 138043
+    },
+    {
+      "code": "JOKE-R",
+      "cn": "小丑",
+      "intro": "原来我们都是小丑。",
+      "mimeType": "image/jpeg",
+      "fileName": "JOKE-R.jpg",
+      "bytes": 40206
+    },
+    {
+      "code": "WOC!",
+      "cn": "握草人",
+      "intro": "卧槽，我怎么是这个人格？",
+      "mimeType": "image/png",
+      "fileName": "WOC!.png",
+      "bytes": 191351
+    },
+    {
+      "code": "THIN-K",
+      "cn": "思考者",
+      "intro": "已深度思考100s。",
+      "mimeType": "image/png",
+      "fileName": "THIN-K.png",
+      "bytes": 233374
+    },
+    {
+      "code": "SHIT",
+      "cn": "愤世者",
+      "intro": "这个世界，构石一坨。",
+      "mimeType": "image/png",
+      "fileName": "SHIT.png",
+      "bytes": 186441
+    },
+    {
+      "code": "ZZZZ",
+      "cn": "装死者",
+      "intro": "我没死，我只是在睡觉。",
+      "mimeType": "image/png",
+      "fileName": "ZZZZ.png",
+      "bytes": 252388
+    },
+    {
+      "code": "POOR",
+      "cn": "贫困者",
+      "intro": "我穷，但我很专。",
+      "mimeType": "image/png",
+      "fileName": "POOR.png",
+      "bytes": 189755
+    },
+    {
+      "code": "MONK",
+      "cn": "僧人",
+      "intro": "没有那种世俗的欲望。",
+      "mimeType": "image/png",
+      "fileName": "MONK.png",
+      "bytes": 188431
+    },
+    {
+      "code": "IMSB",
+      "cn": "傻者",
+      "intro": "认真的么？我真的是傻逼么？",
+      "mimeType": "image/png",
+      "fileName": "IMSB.png",
+      "bytes": 269351
+    },
+    {
+      "code": "SOLO",
+      "cn": "孤儿",
+      "intro": "我哭了，我怎么会是孤儿？",
+      "mimeType": "image/png",
+      "fileName": "SOLO.png",
+      "bytes": 140640
+    },
+    {
+      "code": "FUCK",
+      "cn": "草者",
+      "intro": "操！这是什么人格？",
+      "mimeType": "image/png",
+      "fileName": "FUCK.png",
+      "bytes": 247246
+    },
+    {
+      "code": "DEAD",
+      "cn": "死者",
+      "intro": "我，还活着吗？",
+      "mimeType": "image/png",
+      "fileName": "DEAD.png",
+      "bytes": 241648
+    },
+    {
+      "code": "IMFW",
+      "cn": "废物",
+      "intro": "我真的...是废物吗？",
+      "mimeType": "image/png",
+      "fileName": "IMFW.png",
+      "bytes": 153028
+    },
+    {
+      "code": "HHHH",
+      "cn": "傻乐者",
+      "intro": "哈哈哈哈哈哈。",
+      "mimeType": "image/png",
+      "fileName": "HHHH.png",
+      "bytes": 206282
+    },
+    {
+      "code": "DRUNK",
+      "cn": "酒鬼",
+      "intro": "烈酒烧喉，不得不醉。",
+      "mimeType": "image/png",
+      "fileName": "DRUNK.png",
+      "bytes": 221369
+    }
+  ]
+}
