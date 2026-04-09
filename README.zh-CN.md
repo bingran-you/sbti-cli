@@ -82,6 +82,8 @@ npm install
 npm test
 ```
 
+发布到 npm 的 tarball 现在只会带上独立的 `dist/sbti-cli.mjs` CLI 包和基础元数据；开发期的源码、测试、脚本和图片资源仍然只保留在仓库里。
+
 安装完成后，直接启动：
 
 ```bash
@@ -246,8 +248,11 @@ CLI 不是手写“差不多”的逻辑，而是每次都直接跑这份内置�
 - [`src/runtime.mjs`](src/runtime.mjs) — 内置运行时加载、sandbox 运行、结果汇总
 - [`src/bundled-data.mjs`](src/bundled-data.mjs) — CLI 使用的内置快照
 - [`src/type-images.mjs`](src/type-images.mjs) — 图片工具与本地画廊生成
+- [`dist/sbti-cli.mjs`](dist/sbti-cli.mjs) — npm 包里实际发布的独立 CLI 文件
+- [`scripts/build-dist.mjs`](scripts/build-dist.mjs) — 生成独立发布版 CLI 的构建脚本
 - [`scripts/export-type-images.mjs`](scripts/export-type-images.mjs) — 重建结果图 manifest 与画廊
 - [`test/runtime.test.mjs`](test/runtime.test.mjs) — 内置运行时对齐测试
+- [`test/package.test.mjs`](test/package.test.mjs) — npm tarball 发布面检查
 - [`test/type-images.test.mjs`](test/type-images.test.mjs) — 图片资源完整性测试
 
 ---
