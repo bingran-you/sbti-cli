@@ -1,0 +1,7 @@
+This published package includes original code and documentation authored for
+`sbti-cli`, which are released under the MIT License in `LICENSE`.
+
+It also includes bundled survey prompts, result descriptions, and character
+artwork derived from upstream SBTI materials. Those upstream materials remain
+subject to their original ownership and are not relicensed by this package
+unless the original rights holder states otherwise.

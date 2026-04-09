@@ -1,6 +1,4 @@
 export const BUNDLED_SBTI_SNAPSHOT = {
-  "generatedFrom": "https://sbti.fancc.de5.net/main.js",
-  "generatedAt": "2026-04-09T20:28:22.987Z",
   "dimensionMeta": {
     "S1": {
       "name": "S1 自尊自信",

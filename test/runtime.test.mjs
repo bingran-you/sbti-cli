@@ -99,7 +99,7 @@ async function loadBundledRuntime(seed = 42) {
   });
 }
 
-test('formatOptionCode follows the website letter labels', () => {
+test('formatOptionCode follows the expected letter labels', () => {
   assert.equal(formatOptionCode(0), 'A');
   assert.equal(formatOptionCode(3), 'D');
   assert.equal(formatOptionCode(27), '28');
@@ -268,7 +268,7 @@ test('runtime loads the bundled offline snapshot without touching fetch', async 
 
     assert.equal(runtime.sourceKind, 'bundled');
     assert.equal(runtime.sourceUrl, BUNDLED_SBTI_SOURCE_URL);
-    assert.match(runtime.sourceDescription, /内置离线快照/);
+    assert.equal(runtime.sourceDescription, '内置离线题库');
     assert.equal(runtime.fallbackReason, null);
     assert.equal(runtime.exports.questions.length, 30);
     assert.equal(result.resultPattern, 'HMH-HLL-LML-HML-LLL');

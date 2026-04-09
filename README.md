@@ -130,7 +130,6 @@ npm run sbti
 
 ```text
 SBTI CLI
-Question source: bundled:sbti-main.js
 
 Question 1 / 31 · dimension hidden
 ...

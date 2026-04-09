@@ -129,7 +129,6 @@ npm run sbti
 
 ```text
 SBTI 人格测试 CLI
-题库来源: bundled:sbti-main.js
 
 第 1 题 / 31 · 维度已隐藏
 ...

@@ -13,6 +13,30 @@ const cliPath = path.join(repoRoot, 'src/cli.mjs');
 const distDir = path.join(repoRoot, 'dist');
 const distPath = path.join(distDir, 'sbti-cli.mjs');
 
+function buildPublishedSnapshot(snapshot) {
+  const {
+    dimensionMeta,
+    questions,
+    specialQuestions,
+    TYPE_LIBRARY,
+    NORMAL_TYPES,
+    DIM_EXPLANATIONS,
+    dimensionOrder,
+    DRUNK_TRIGGER_QUESTION_ID
+  } = snapshot;
+
+  return {
+    dimensionMeta,
+    questions,
+    specialQuestions,
+    TYPE_LIBRARY,
+    NORMAL_TYPES,
+    DIM_EXPLANATIONS,
+    dimensionOrder,
+    DRUNK_TRIGGER_QUESTION_ID
+  };
+}
+
 function stripRuntimeSource(source) {
   return source
     .replace(
@@ -37,7 +61,7 @@ const [runtimeSource, cliSource] = await Promise.all([
 ]);
 
 const compressedSnapshot = gzipSync(
-  Buffer.from(JSON.stringify(BUNDLED_SBTI_SNAPSHOT), 'utf8')
+  Buffer.from(JSON.stringify(buildPublishedSnapshot(BUNDLED_SBTI_SNAPSHOT)), 'utf8')
 ).toString('base64');
 
 const distSource = [

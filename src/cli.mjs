@@ -48,8 +48,8 @@ function printHelp() {
   console.log(`SBTI survey CLI
 
 Usage:
-  npm run sbti
-  npm run sbti -- --seed 42
+  sbti-cli
+  sbti-cli --seed 42
 
 Options:
   --seed <number>              Use deterministic question ordering for testing.
@@ -133,7 +133,6 @@ async function run() {
   });
 
   console.log('SBTI 人格测试 CLI');
-  console.log(`题库来源: ${runtime.sourceDescription}`);
   if (options.seed !== null) {
     console.log(`随机种子: ${options.seed}`);
   }

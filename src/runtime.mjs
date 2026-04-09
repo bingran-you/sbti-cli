@@ -2,7 +2,7 @@ import vm from 'node:vm';
 
 import { BUNDLED_SBTI_SNAPSHOT } from './bundled-data.mjs';
 
-export const BUNDLED_SBTI_SOURCE_URL = 'bundled:sbti-main.js';
+export const BUNDLED_SBTI_SOURCE_URL = 'bundled:offline-survey';
 export const NORMAL_TYPE_SIMILARITY_FALLBACK_THRESHOLD = 60;
 export const SIMILARITY_DISTANCE_DENOMINATOR = 30;
 export const DIMENSION_GROUP_SIZE = 3;
@@ -75,7 +75,7 @@ function serializeBundledValue(value) {
 }
 
 export function buildBundledSbtiSource(snapshot = BUNDLED_SBTI_SNAPSHOT) {
-  return `// Built-in offline snapshot generated from ${snapshot.generatedFrom} at ${snapshot.generatedAt}
+  return `// Built-in offline snapshot
 const dimensionMeta = ${serializeBundledValue(snapshot.dimensionMeta)};
 const questions = ${serializeBundledValue(snapshot.questions)};
 const specialQuestions = ${serializeBundledValue(snapshot.specialQuestions)};
@@ -212,8 +212,7 @@ function startTest() {
 }
 
 export const BUNDLED_SBTI_SOURCE_TEXT = buildBundledSbtiSource();
-export const BUNDLED_SBTI_SOURCE_DESCRIPTION =
-  `内置离线快照（基于 ${BUNDLED_SBTI_SNAPSHOT.generatedFrom}，生成于 ${BUNDLED_SBTI_SNAPSHOT.generatedAt}）`;
+export const BUNDLED_SBTI_SOURCE_DESCRIPTION = '内置离线题库';
 
 export function createSeededRandom(seed) {
   const normalized = Number(seed);
@@ -530,9 +529,9 @@ export function buildResultSummary(runtime, answersInput = runtime.exports.app.a
   const previousAnswers = runtime.exports.app.answers;
   runtime.exports.app.answers = { ...dimensionStats.answers };
 
-  let websiteResult;
+  let computedResult;
   try {
-    websiteResult = toPlainValue(runtime.exports.computeResult());
+    computedResult = toPlainValue(runtime.exports.computeResult());
   } finally {
     runtime.exports.app.answers = previousAnswers;
   }
@@ -545,7 +544,7 @@ export function buildResultSummary(runtime, answersInput = runtime.exports.app.a
     !drinkTriggered && bestNormal.similarity < NORMAL_TYPE_SIMILARITY_FALLBACK_THRESHOLD;
 
   return {
-    ...websiteResult,
+    ...computedResult,
     ...dimensionStats,
     ranked,
     bestNormal,

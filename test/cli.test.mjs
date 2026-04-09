@@ -27,6 +27,17 @@ test('help output only advertises the locked-down CLI options', () => {
   assert.doesNotMatch(result.stdout, /source-url/);
 });
 
+test('interactive banner does not expose upstream source provenance', () => {
+  const result = spawnSync(process.execPath, [cliPath], {
+    encoding: 'utf8',
+    input: 'q\n'
+  });
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /SBTI 人格测试 CLI/);
+  assert.doesNotMatch(result.stdout, /题库来源|Question source|https?:\/\/|main\.js/);
+});
+
 test('lowercase b stays available as option B and the CLI source contains no backtracking controls', async () => {
   const runtime = await loadSbtiRuntime({
     random: createSeededRandom('1')

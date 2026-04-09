@@ -1,8 +1,10 @@
 {
-  "name": "sbti-cli",
-  "version": "0.1.0",
+  "name": "@bingran/sbti-cli",
+  "version": "0.1.1",
+  "private": true,
   "type": "module",
   "description": "Standalone CLI runner for the public SBTI survey.",
+  "license": "MIT",
   "files": [
     "dist",
     "LICENSE",
@@ -15,6 +17,7 @@
   },
   "scripts": {
     "build:dist": "node scripts/build-dist.mjs",
+    "build:package": "npm run build:dist && node scripts/build-package.mjs",
     "start": "node src/cli.mjs",
     "sbti": "node src/cli.mjs",
     "export-images": "node scripts/export-type-images.mjs",
