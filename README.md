@@ -1,3 +1,5 @@
+
+
 <h1 align="center">SBTI CLI - Test SBTI for your agents.</h1>
 
 <p align="center">
@@ -252,6 +254,7 @@ All 27 result posters are checked into [`assets/type-images/`](assets/type-image
 - [`src/type-images.mjs`](src/type-images.mjs) — image helpers and local gallery generation
 - [`dist/sbti-cli.mjs`](dist/sbti-cli.mjs) — standalone bundled CLI shipped in the npm package
 - [`scripts/build-dist.mjs`](scripts/build-dist.mjs) — generates the standalone publishable CLI bundle
+- [`scripts/build-package.mjs`](scripts/build-package.mjs) — builds the publishable npm package
 - [`scripts/export-type-images.mjs`](scripts/export-type-images.mjs) — local poster metadata rebuild
 - [`test/runtime.test.mjs`](test/runtime.test.mjs) — bundled runtime parity tests
 - [`test/package.test.mjs`](test/package.test.mjs) — publish-tarball surface checks
